@@ -1,9 +1,8 @@
-; bios_calls.inc BIOS 常用功能号定义
+; bios_calls.inc - BIOS 常用功能号定义
 
 ; 键盘输入功能号
 KEY_INPUT_WAIT    equ 0x00    ; 等待键盘输入
 KEY_INPUT_CHECK   equ 0x01    ; 检查键盘输入
-KEY_INPUT_GET     equ 0x00    ; 获取键盘输入
 
 ; 显示功能号  
 VIDEO_TELETYPE    equ 0x0E    ; 电传打字输出
