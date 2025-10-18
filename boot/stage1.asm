@@ -6,7 +6,6 @@
 %endif
 
 %include "bios_calls.inc"
-; %include "stdio.inc"
 
 ; 常量
 End2B equ 0xAA55
@@ -26,7 +25,7 @@ start:
     
     ; 尝试读取MBR（第一个扇区的内容）
     mov ax, 0x07E0; Ax = Ah + Al 从磁盘读取到的目标内存地址
-    mov es, ax    ; ES:BX 是磁盘缓冲区的标准
+    mov es, ax    ; ES:BX 是从磁盘读取到内存
     xor bx, bx    ; 偏移量
     
     mov ah, 0x02 ; 读取扇区
@@ -120,12 +119,12 @@ debug_pause:
     call print_string
     ret
 
-stage1_msg db "Stage 1 Loader: Hello from sector 1!", 13, 10, 0
-Booting_msg db 'Sucessful Booting...', 13, 10, 0
-success_msg db "Sucessful disk read from sector 2-5!", 13, 10, 0
-disk_error_msg db "Error disk read from sector 2-5!", 13, 10, 0 
-debug_msg db 'Start Debug, debug info...', 13, 10, 0
-end_debug_msg db 'End Debug, debug end...', 13, 10, 0
+stage1_msg db "[INFO]: Stage 1 Loader: Hello from sector 1!", 13, 10, 0
+Booting_msg db '[INFO]: Booting...', 13, 10, 0
+success_msg db "[INFO]: disk read from sector 2-5!", 13, 10, 0
+disk_error_msg db "[ERROR]: disk read from sector 2-5!", 13, 10, 0 
+debug_msg db '[INFO]: Start Debug, debug info...', 13, 10, 0
+end_debug_msg db '[INFO]: End Debug, debug end...', 13, 10, 0
 
 times 510 - ($ - $$) db 0 ; (510 - 已使用字节量)
 dw End2B ; 必须写入0xAA55这个是BIOS判断标志

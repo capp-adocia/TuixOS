@@ -3,6 +3,7 @@ set architecture i8086
 target remote localhost:1234
 break *0x7c00
 add-symbol-file stage1.debug.o 0x7c00
+add-symbol-file stage2.debug.o 0x7e00
 echo 
 echo === HydrangeaOS Debug Session ===
 echo Commands:
