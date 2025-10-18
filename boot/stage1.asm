@@ -1,32 +1,38 @@
-; boot.asm BIOS加载MBR
+; stage1.asm BIOS加载MBR
 
 [BITS 16]        ; 生成16位代码（实模式）
+%ifndef DEBUG
 [ORG 0x7C00]     ; 被加载到内存地址 0x7C00 (这个是当前的基址)
+%endif
 
 %include "bios_calls.inc"
+; %include "stdio.inc"
+
 ; 常量
 End2B equ 0xAA55
 
 start:
     ; 在实模式下，内存地址=段寄存器(ds)×16+偏移地址(si)
     ; 注意代码里计算的都是相对地址，最终的物理地址还要加上ORG地址
-    xor ax, ax
     mov ax, cs
     mov ds, ax
     
     ; 显示启动消息
     mov si, Booting_msg
     call print_string
+
+    mov si, stage1_msg
+    call print_string
     
     ; 尝试读取MBR（第一个扇区的内容）
-    mov ax, 0x07E0; Ax = Ah + Al
+    mov ax, 0x07E0; Ax = Ah + Al 从磁盘读取到的目标内存地址
     mov es, ax    ; ES:BX 是磁盘缓冲区的标准
     xor bx, bx    ; 偏移量
     
     mov ah, 0x02 ; 读取扇区
-    mov al, 1    ; 读取1个扇区
+    mov al, 4    ; 读取4个扇区
     mov ch, 0x00 ; 柱面0
-    mov cl, 0x01 ; 扇区1
+    mov cl, 0x02 ; 扇区2
     mov dh, 0x00 ; 磁头0
     mov dl, 0x00 ; 软盘启动
 
@@ -36,7 +42,12 @@ start:
     mov si, success_msg
     call print_string
 
-    jmp $ ; 死循环
+    call stage2_jump
+
+    jmp $
+
+stage2_jump:
+    jmp 0x7E00 ; 跳转至stage2
 
 disk_error:
     mov si, disk_error_msg
@@ -48,7 +59,6 @@ disk_error:
 
     mov ah, KEY_INPUT_WAIT
     int 0x16
-
     ret
 
 ; 打印字符串
@@ -100,7 +110,6 @@ print_hex_byte:
     int 0x10
     ret
 
-
 ; 调试暂停
 debug_pause:
     mov si, debug_msg
@@ -111,9 +120,10 @@ debug_pause:
     call print_string
     ret
 
-success_msg db "Sucessful disk read", 13, 10, 0
-disk_error_msg db "Error disk read", 13, 10, 0 
+stage1_msg db "Stage 1 Loader: Hello from sector 1!", 13, 10, 0
 Booting_msg db 'Sucessful Booting...', 13, 10, 0
+success_msg db "Sucessful disk read from sector 2-5!", 13, 10, 0
+disk_error_msg db "Error disk read from sector 2-5!", 13, 10, 0 
 debug_msg db 'Start Debug, debug info...', 13, 10, 0
 end_debug_msg db 'End Debug, debug end...', 13, 10, 0
 
