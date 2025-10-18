@@ -1,4 +1,4 @@
-# Hydrangea
+# HydrangeaOS
 
 `绣球操作系统`
 
