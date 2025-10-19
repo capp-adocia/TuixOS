@@ -1,4 +1,4 @@
-; bios_calls.inc - BIOS 常用功能号定义
+; inclued/bios_calls.inc - BIOS 常用功能号定义
 
 ; 键盘输入功能号
 KEY_INPUT_WAIT    equ 0x00    ; 等待键盘输入

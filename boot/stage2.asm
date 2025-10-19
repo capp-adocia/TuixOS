@@ -1,4 +1,4 @@
-; stage2.asm 代码在0x7E00-0x85FF
+; boot/stage2.asm 代码在0x7E00-0x85FF
 
 [BITS 16]
 %ifndef DEBUG
@@ -75,6 +75,29 @@ detect_memory:
     call print_string
     ret
 
+; 加载C内核
+load_kernel:
+    mov ax, 0x900      ; 内核加载到 0x9000（注意这里不是写0x9000）
+    mov es, ax
+    xor bx, bx
+    
+    mov ah, 0x02        ; 读取扇区
+    mov al, 10          ; 读取10个扇区（5KB内核）
+    mov ch, 0           ; 柱面0
+    mov cl, 6           ; 从扇区6开始（stage2在2-5）
+    mov dh, 0           ; 磁头0
+    mov dl, 0           ; 驱动器0
+    int 0x13
+    jc .error
+    mov si, kernel_load_success
+    call print_string
+    ret
+.error:
+    ; 错误处理
+    mov si, kernel_load_error
+    call print_string
+    jmp $
+
 ; 开启 A20
 enable_a20:
     call test_a20_status
@@ -148,10 +171,12 @@ test_a20_status:
 
 ; 准备进入保护模式
 prepare_pmode:
+    ; 加载C内核
+    call load_kernel
     ; 启用A20
     call enable_a20
 
-    mov si, setting_up_gdt_msg
+    mov si, entering_pmode_msg
     call print_string
     
     lgdt [gdt_descriptor]
@@ -161,48 +186,86 @@ prepare_pmode:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-
+    ; 选择子:偏移 注意此时已经是保护模式了
     jmp 0x08:protected_mode_entry
+    ; 如果是实模式下应该是段:偏移->物理地址
 
 [BITS 32]
 protected_mode_entry:
-    mov ax, 0x10
+    mov ax, 0x10 ; 数据段选择子
     mov ds, ax
     mov es, ax
     mov ss, ax
-    mov esp, 0x90000
-    
+    mov esp, 0x90000 ; 栈顶
+    mov ebp, 0
+
     call pm_clear_screen
     call pm_print_string
-    
+    ; call pm_set_cursor
+    ; 进入c代码
+    jmp 0x9000
     jmp $
 
 ; 保护模式下的清屏函数
 pm_clear_screen:
-    mov edi, 0xB8000
-    mov ecx, 80 * 25  ; 80x25文本模式
+    mov edi, 0xB8000     ; 显存字符的首地址
+    mov ecx, 80 * 25     ; 80x25文本模式
     mov eax, 0x0F200F20  ; 黑底白字的空格
 .clear_loop:
     mov [edi], eax
-    add edi, 4
+    add edi, 4 ; 每次处理2字符，一个字符2字节
     loop .clear_loop
     ret
 
 ; 保护模式下的字符串打印
 pm_print_string:
-    mov esi, pm_message
+    mov esi, pm_message ; 这里esi指向字符串的地址，不是存储它的内容
     mov edi, 0xB8000
-    mov ah, 0x0F  ; 白底黑字
+    mov ah, 0x0F  ; 黑字白底
 .print_loop:
     lodsb
     test al, al
     jz .done
-    mov [edi], ax
-    add edi, 2
+    mov [edi], ax ; ax = 属性字节 + 字符字节
+    add edi, 2    ; 目标地址自增
     jmp .print_loop
 .done:
     ret
 
+; 设置光标位置 (行=row, 列=col)
+; 文本模式光标位置 = row * 80 + col
+pm_set_cursor:
+    push eax
+    push edx
+    push ebx
+    ; 计算光标位置
+    mov eax, [current_row]
+    mov ebx, 80
+    mul ebx
+    add eax, [current_col]
+
+    ; 设置光标位置
+    mov ebx, eax
+    ; 向VGA寄存器写入光标位置低字节
+    mov dx, 0x3D4
+    mov al, 0x0F
+    out dx, al
+    mov dx, 0x3D5
+    mov al, bl
+    out dx, al
+
+    ; 向VGA寄存器写入光标位置高字节
+    mov dx, 0x3D4
+    mov al, 0x0E
+    out dx, al
+    mov dx, 0x3D5
+    mov al, bl
+    out dx, al
+
+    pop ebx
+    pop edx
+    pop eax
+    ret
 
 ; 打印字符串
 print_string:
@@ -227,17 +290,17 @@ print_newline:
 
 stage2_msg db "[INFO]: Stage 2 Loader: Hello from sector 2!", 13, 10, 0
 detect_memory_success db "[INFO]: Detect memory success!", 13, 10, 0
-detect_memory_error db "[ERROR]: Detect memory error", 13, 10, 0
+detect_memory_error db "[ERROR]: Detect memory error!", 13, 10, 0
+kernel_load_success db "[INFO]: Kernel load from sector 6-15 success!", 13, 10, 0
+kernel_load_error db "[ERROR]: Kernel load from sector 6-15 error!", 13, 10, 0 
 a20_success_msg db "[INFO]: A20: Enabled", 13, 10, 0
 a20_failed_msg db "[ERROR]: A20 line is disabled! Cannot enter protected mode.", 13, 10, 0
-setting_up_gdt_msg db "[INFO]: Setting up GDT...", 13, 10, 0
 entering_pmode_msg db "[INFO]: Entering protected mode...", 13, 10, 0
-pmode_msg db "[INFO]: Protected Mode: Success!", 0
-gdt_loaded_msg db "[INFO]: GDT loaded", 13, 10, 0
-idt_loaded_msg db "[INFO]: IDT loaded", 13, 10, 0  
-cli_done_msg db "[INFO]: CLI executed", 13, 10, 0
-cr0_set_msg db "[INFO]: CR0 set, jumping to PM", 13, 10, 0
-pm_message db "[INFO]: Protected Mode: Success!", 0
+pm_message db "[INFO]: Stage 3 Loader, Protected Mode init success!", 0
+current_row dd 0
+current_col dd 0
+
+
 ; 内存布局
 ; 0x00000000-0x0009FBFF:   639KB  可用
 ; 0x0009FC00-0x0009FFFF:   1KB    保留 (EBDA)
@@ -249,8 +312,8 @@ pm_message db "[INFO]: Protected Mode: Success!", 0
 
 gdt_start:
     dq 0x0000000000000000
-    dw 0xFFFF, 0x0000, 0x9A00, 0x0040  ; 代码段
-    dw 0xFFFF, 0x0000, 0x9200, 0x00CF  ; 数据段
+    dw 0xFFFF, 0x0000, 0x9A00, 0x0040  ; 代码段 界限: 0x0FFFF (64KB)
+    dw 0xFFFF, 0x0000, 0x9200, 0x00CF  ; 数据段 界限: 0xFFFFF (4GB)
 gdt_end:
 
 gdt_descriptor:

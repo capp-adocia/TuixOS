@@ -1,4 +1,4 @@
-; stage1.asm BIOS加载MBR
+; boot/stage1.asm BIOS加载MBR
 
 [BITS 16]        ; 生成16位代码（实模式）
 %ifndef DEBUG
@@ -121,8 +121,8 @@ debug_pause:
 
 stage1_msg db "[INFO]: Stage 1 Loader: Hello from sector 1!", 13, 10, 0
 Booting_msg db '[INFO]: Booting...', 13, 10, 0
-success_msg db "[INFO]: disk read from sector 2-5!", 13, 10, 0
-disk_error_msg db "[ERROR]: disk read from sector 2-5!", 13, 10, 0 
+success_msg db "[INFO]: Disk read from sector 2-5!", 13, 10, 0
+disk_error_msg db "[ERROR]: Disk read from sector 2-5!", 13, 10, 0 
 debug_msg db '[INFO]: Start Debug, debug info...', 13, 10, 0
 end_debug_msg db '[INFO]: End Debug, debug end...', 13, 10, 0
 
