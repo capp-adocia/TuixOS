@@ -154,12 +154,9 @@ prepare_pmode:
     mov si, setting_up_gdt_msg
     call print_string
     
-    ; 设置GDT
     lgdt [gdt_descriptor]
-
-    ; 进入保护模式
-    mov si, entering_pmode_msg
-    call print_string
+    
+    cli ; 关中断
 
     mov eax, cr0
     or eax, 1
@@ -169,31 +166,42 @@ prepare_pmode:
 
 [BITS 32]
 protected_mode_entry:
-    ; 设置数据段寄存器
-    mov ax, 0x10 ; 数据段选择子
+    mov ax, 0x10
     mov ds, ax
     mov es, ax
-    mov fs, ax
-    mov gs, ax
-
-    ; 设置栈段
     mov ss, ax
-    mov esp, 0x90000 ; 设置栈指针
+    mov esp, 0x90000
+    
+    call pm_clear_screen
+    call pm_print_string
+    
+    jmp $
 
-    ; 安全啦
-    ; 显示成功消息
-    mov esi, pmode_msg
+; 保护模式下的清屏函数
+pm_clear_screen:
     mov edi, 0xB8000
-    mov ah, 0x0F
+    mov ecx, 80 * 25  ; 80x25文本模式
+    mov eax, 0x0F200F20  ; 黑底白字的空格
+.clear_loop:
+    mov [edi], eax
+    add edi, 4
+    loop .clear_loop
+    ret
+
+; 保护模式下的字符串打印
+pm_print_string:
+    mov esi, pm_message
+    mov edi, 0xB8000
+    mov ah, 0x0F  ; 白底黑字
 .print_loop:
     lodsb
     test al, al
     jz .done
-    stosw
+    mov [edi], ax
+    add edi, 2
     jmp .print_loop
 .done:
-    ; 死循环
-    jmp $
+    ret
 
 
 ; 打印字符串
@@ -225,7 +233,11 @@ a20_failed_msg db "[ERROR]: A20 line is disabled! Cannot enter protected mode.",
 setting_up_gdt_msg db "[INFO]: Setting up GDT...", 13, 10, 0
 entering_pmode_msg db "[INFO]: Entering protected mode...", 13, 10, 0
 pmode_msg db "[INFO]: Protected Mode: Success!", 0
-
+gdt_loaded_msg db "[INFO]: GDT loaded", 13, 10, 0
+idt_loaded_msg db "[INFO]: IDT loaded", 13, 10, 0  
+cli_done_msg db "[INFO]: CLI executed", 13, 10, 0
+cr0_set_msg db "[INFO]: CR0 set, jumping to PM", 13, 10, 0
+pm_message db "[INFO]: Protected Mode: Success!", 0
 ; 内存布局
 ; 0x00000000-0x0009FBFF:   639KB  可用
 ; 0x0009FC00-0x0009FFFF:   1KB    保留 (EBDA)
@@ -237,26 +249,12 @@ pmode_msg db "[INFO]: Protected Mode: Success!", 0
 
 gdt_start:
     dq 0x0000000000000000
-    ; 代码段描述符 (0x08)
-    dw 0xFFFF       ; Limit 0-15
-    dw 0x0000       ; Base 0-15  
-    db 0x00         ; Base 16-23
-    db 0x9A         ; P=1, DPL=0, S=1, Type=1010 (代码段，可读，非一致)
-    db 0xCF         ; G=1, D/B=1, L=0, Limit 16-19=0xF
-    db 0x00         ; Base 24-31
-
-    ; 数据段描述符 (0x10)
-    dw 0xFFFF       ; Limit 0-15
-    dw 0x0000       ; Base 0-15
-    db 0x00         ; Base 16-23
-    db 0x92         ; P=1, DPL=0, S=1, Type=0010 (数据段，可写，向上扩展)
-    db 0xCF         ; G=1, D/B=1, L=0, Limit 16-19=0xF
-    db 0x00         ; Base 24-31
+    dw 0xFFFF, 0x0000, 0x9A00, 0x0040  ; 代码段
+    dw 0xFFFF, 0x0000, 0x9200, 0x00CF  ; 数据段
 gdt_end:
 
 gdt_descriptor:
     dw gdt_end - gdt_start - 1  ; GDT 界限
-    dd gdt_start + 0x7E00       ; GDT 基地址
-
+    dd gdt_start                ; GDT 基地址
 ; 填充到4个扇区（2048字节）
 times 2048 - ($ - $$) db 0
