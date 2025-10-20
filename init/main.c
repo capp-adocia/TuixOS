@@ -1,6 +1,7 @@
 // init/main.c 实现C内核
 #include <string.h>
 #include <screen.h>
+#include <memory.h>
 
 void _start(void);
 void kernel_main(void);
@@ -39,6 +40,7 @@ void print_LOGO(void)
 #define TOTAL_MEMORY 16 * 1024 * 1024
 #define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE)
 
+
 /* 位图数组 */
 uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配4096
 
@@ -48,7 +50,7 @@ void init_physical_memory(void)
     uint32_t used_end = 1 * 1024 * 1024; // 内核结束的位置
 
     // 1. 探测内存大小（最简单：先假设有16MB）
-    memset(phys_bitmap, 0 sizeof(phys_bitmap))
+    memset(phys_bitmap, 0 , sizeof(phys_bitmap));
     // 2. 初始化位图：大部分标记为空闲
 
     // 3. 标记已使用的区域（内核代码、位图本身等）

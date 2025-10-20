@@ -3,13 +3,15 @@
 #ifndef I_SCREEN_H
 #define I_SCREEN_H
 
+#include <types.h>
+
 /**
  * 在指定位置输出一个字符
  * @param c 要输出的字符
  * @param row 行位置 (0-24)
  * @param col 列位置 (0-79)
  */
-static __attribute__((always_inline)) void put_char(char c, int row, int col)
+static __attribute__((always_inline)) void put_char(const char c, int row, int col)
 {
     char* video = (char*)0xB8000 + (row * 80 + col) * 2;
     video[0] = c;
@@ -22,7 +24,7 @@ static __attribute__((always_inline)) void put_char(char c, int row, int col)
  * @param row 行位置 (0-24)
  * @param col 列位置 (0-79)
  */
-static __attribute__((always_inline)) void kprint(char* str, int row, int col)
+static __attribute__((always_inline)) void kprint(const char* str, int row, int col)
 {
     for(int i = 0; str[i] != '\0'; i++)
     {

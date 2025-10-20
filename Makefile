@@ -28,7 +28,10 @@ CFLAGS += -Wno-sign-conversion
 LDFLAGS = -m elf_i386 -nostdlib -T linker.ld
 
 # 目标文件
-OBJS = kernel.o
+KERNEL_OBJS = init/main.o
+MM_OBJS = mm/memory.o
+
+OBJS = $(KERNEL_OBJS) $(MM_OBJS)
 
 all: disk.img
 
@@ -37,19 +40,20 @@ stage1.bin: boot/stage1.asm
 	@echo "[ASM]  $<"
 	$(NASM) -I include/ -f bin $< -o $@
 
-# 第二阶段加载器（汇编）
+# 第二阶段加载器
 stage2.bin: boot/stage2.asm
 	@echo "[ASM]  $<"
 	$(NASM) -I include/ -f bin $< -o $@
 
-# 编译C内核
-kernel.o: init/main.c
-	@echo "[CC]  $^"
+# 编译C文件
+%.o: %.c
+	@echo "[CC]  $<"
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # 编译C内核为ELF，然后转为纯二进制
 kernel.bin: $(OBJS) linker.ld
-	@echo "[LD]  $(OBJS) -> kernel.elf"
+	@echo "[LD]  链接内核..."
 	$(LD) $(LDFLAGS) -o kernel.elf $(OBJS)
 	$(OBJCOPY) -O binary kernel.elf kernel.bin
 
@@ -64,7 +68,7 @@ kernel.elf: $(OBJS) linker.ld
 	$(LD) $(LDFLAGS) -o kernel.elf $(OBJS)
 
 disk.img: stage1.bin stage2.bin kernel.bin
-	@echo "[DD]  $^"
+	@echo "[DD]  制作磁盘镜像..."
 	dd if=/dev/zero of=disk.img bs=512 count=2880 2>/dev/null
 	dd if=stage1.bin of=disk.img conv=notrunc 2>/dev/null
 	dd if=stage2.bin of=disk.img conv=notrunc bs=512 seek=1 2>/dev/null
@@ -84,7 +88,7 @@ debug: disk.img stage1d.elf stage2d.elf kernel.elf
 	
 clean:
 	rm -f *.bin *.o *.log *.img *.elf
-
+	rm -f init/*.o mm/*.o
 
 help:
 	@echo "Available Object:"

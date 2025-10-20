@@ -3,11 +3,13 @@
 #ifndef I_STRING_H
 #define I_STRING_H
 
+#include <types.h>
+
 /**
  * 计算字符串长度
  * @param str 要计算长度的字符串
  */
-static __attribute__((always_inline)) int strlen(const char* str)
+static __attribute__((always_inline)) size_t strlen(const char* str)
 {
     int len = 0;
     while(str[len] != '\0') len++;
