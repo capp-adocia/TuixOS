@@ -8,8 +8,9 @@ OBJCOPY = objcopy
 
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-CFLAGS += -m32 -std=gnu99 -O1 -g -I include/
+CFLAGS += -m32 -std=gnu99 -O0 -g
 CFLAGS += -fno-pie
+CFLAGS += -I include/
 
 CFLAGS += -Wall -Wextra -Wpedantic
 CFLAGS += -Wshadow -Wpointer-arith 

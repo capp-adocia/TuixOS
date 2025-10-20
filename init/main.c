@@ -1,144 +1,93 @@
 // init/main.c 实现C内核
+#include <string.h>
+#include <screen.h>
 
 void _start(void);
 void kernel_main(void);
-
-/**
- * 在指定位置输出一个字符
- * @param c 要输出的字符
- * @param row 行位置 (0-24)
- * @param col 列位置 (0-79)
- */
-static void put_char(char c, int row, int col)
-{
-    char* video = (char*)0xB8000 + (row * 80 + col) * 2;
-    video[0] = c;
-    video[1] = 0x0E;
-}
-/**
- * 计算字符串长度
- * @param str 要计算长度的字符串
- */
-static int strlen(const char* str)
-{
-    int len = 0;
-    while(str[len] != '\0') len++;
-    return len;
-}
-
-/**
- * 整型转为字符串
- * @param num 待转换的整数
- * @param buffer 输出字符串
- */
-static inline void int_to_str(int num, char* buffer)
-{
-    if (num < 10) {
-        buffer[0] = '0' + num;
-        buffer[1] = '\0';
-    } else if (num < 100) {
-        buffer[0] = '0' + (num / 10);
-        buffer[1] = '0' + (num % 10);
-        buffer[2] = '\0';
-    } else {
-        // 处理三位数
-        buffer[0] = '0' + (num / 100);
-        buffer[1] = '0' + ((num / 10) % 10);
-        buffer[2] = '0' + (num % 10);
-        buffer[3] = '\0';
-    }
-}
-
-/**
- * 在指定位置输出一个字符串
- * @param str 要输出的字符串
- * @param row 行位置 (0-24)
- * @param col 列位置 (0-79)
- */
-static inline void kprint(char* str, int row, int col)
-{
-    for(int i = 0; str[i] != '\0'; i++)
-    {
-        put_char(str[i], row, col + i);
-    }
-}
-
-/**
- * 清屏函数
- */
-void static inline clear_screen(void)
-{
-    char* video = (char*)0xB8000;
-    for(int i = 0;i < 80 * 25 * 2;i += 2)
-    {
-        video[i] = ' ';
-        video[i + 1] = 0x07;
-    }
-}
 
 void _start(void)
 {
     kernel_main();
 }
 
+const char* logo[] = {
+    "H   H  Y   Y  DDDD   RRRRR     A    N   N  GGGG  EEEEEE    A  ",
+    "H   H   Y Y   D   D  R    R   A A   NN  N G      E        A A ",
+    "HHHHH    Y    D   D  RRRRRR  AAAAA  N N N G  GGG EEEEE   AAAAA",
+    "H   H    Y    D   D  R  R   A     A N  NN G   GG E      A     A",
+    "H   H    Y    DDDD   R  RRR A     A N   N  GGGG  EEEEEE A     A"
+};
+
+void print_LOGO(void)
+{
+    int logo_height = sizeof(logo) / sizeof(logo[0]);
+    // 显示logo
+    for (int i = 0; i < logo_height; i++) {
+        kprint(logo[i], 9 + i, 9);
+    }
+    // 显示固定版本信息
+    kprint("HydrangeaOS v0.01", 20, 30);
+    
+    int c = 500000;
+    while(c--) {
+        kprint("LOGO!", 0, 0);
+    }
+
+    kprint("Done!", 0, 0);
+}
+#define PAGE_SIZE 4096
+#define TOTAL_MEMORY 16 * 1024 * 1024
+#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE)
+
+/* 位图数组 */
+uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配4096
+
+void init_physical_memory(void)
+{
+    uint32_t memory_end = 16 * 1024 * 1024;
+    uint32_t used_end = 1 * 1024 * 1024; // 内核结束的位置
+
+    // 1. 探测内存大小（最简单：先假设有16MB）
+    memset(phys_bitmap, 0 sizeof(phys_bitmap))
+    // 2. 初始化位图：大部分标记为空闲
+
+    // 3. 标记已使用的区域（内核代码、位图本身等）
+
+}
+
 
 void kernel_main(void) {
     clear_screen();
+    print_LOGO();
+    clear_screen();
+    kprint("Clean Screen!", 0, 0);
+    while(1){}
+    // 第1步：设置关键基础设施
+    init_physical_memory();   // 内存管理
+    // init_kernel_heap();       // 动态分配
+    // // 第2步：设置中断系统
+    // init_idt();               // 中断描述符表
+    // init_pic();               // 中断控制器
+    // init_timer(100);          // 定时器中断
+
+    // // 第3步：设置默认中断处理程序
+    // for (int i = 0; i < 256; i++) {
+    //     set_idt_entry(i, default_interrupt_handler);
+    // }
+
+    // // 第4步：加载IDT
+    // load_idt();
+
+    // 第5步：现在才安全开中断！
+    // asm volatile("sti");
     
-    const char* logo[] = {
-        "H  H  Y   Y  DDD   RRRR    A   N   N  GGGG  EEEEE   A  ",
-        "H  H   Y Y   D  D  R   R  A A  NN  N G      E      A A ",
-        "HHHH    Y    D  D  RRRR  AAAAA N N N G  GGG EEEE  AAAAA",
-        "H  H    Y    D  D  R R   A   A N  NN G   GG E     A   A",
-        "H  H    Y    DDD   R  RR A   A N   N  GGGG  EEEEE A   A"
-    };
-    
-    int logo_height = 5;
-    int logo_width = 60;
-    
-    int pos_x = 10, pos_y = 7;
-    int old_x = 10, old_y = 7;
-    int speed_x = 1, speed_y = 1;
-    
-    while(1) {
-        // 清除旧位置（用空格覆盖）
-        for (int i = 0; i < logo_height; i++) {
-            for (int j = 0; j < logo_width; j++) {
-                put_char(' ', old_y + i, old_x + j);
-            }
-        }
-        
-        // 保存旧位置
-        old_x = pos_x;
-        old_y = pos_y;
-        
-        // 显示Logo在新位置
-        for (int i = 0; i < logo_height; i++) {
-            kprint(logo[i], pos_y + i, pos_x);
-        }
-        
-        // 显示固定版本信息
-        kprint("HydrangeaOS v0.01", 23, 30);
-        
-        // 更新位置
-        pos_x += speed_x;
-        pos_y += speed_y;
-        
-        // 边界检测和反弹
-        if (pos_x <= 0 || pos_x + logo_width >= 80) {
-            speed_x = -speed_x;
-        }
-        if (pos_y <= 0 || pos_y + logo_height >= 25) {
-            speed_y = -speed_y;
-        }
-        
-        // 边界限制
-        if (pos_x < 0) pos_x = 0;
-        if (pos_x + logo_width >= 80) pos_x = 80 - logo_width - 1;
-        if (pos_y < 0) pos_y = 0;
-        if (pos_y + logo_height >= 25) pos_y = 25 - logo_height - 1;
-        
-        // 延时控制速度
-        for (volatile int i = 0; i < 80000000; i++);
-    }
+    // kprint("中断系统已启动!", 12, 35);
 }
+
+// // kernel_main 中按顺序：
+// 1. init_physical_memory()   // 内存管理
+// 2. init_idt()              // 中断描述符表
+// 3. init_pic()              // 中断控制器
+// 4. init_timer(100)         // 定时器中断
+// 5. sti()                   // 开启中断
+// 6. 开始进程管理...
