@@ -43,7 +43,7 @@ stage2.bin: boot/stage2.asm
 
 # 编译C内核
 kernel.o: init/main.c
-	@echo "[CC]  $<"
+	@echo "[CC]  $^"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # 编译C内核为ELF，然后转为纯二进制
@@ -53,17 +53,17 @@ kernel.bin: $(OBJS) linker.ld
 	$(OBJCOPY) -O binary kernel.elf kernel.bin
 
 # 调试用的 ELF 文件（带 DEBUG 标志）
-stage1d.o: boot/stage1.asm
+stage1d.elf: boot/stage1.asm
 	$(NASM) -I include/ -f elf32 -g -F dwarf -dDEBUG $< -o $@
 
-stage2d.o: boot/stage2.asm
+stage2d.elf: boot/stage2.asm
 	$(NASM) -I include/ -f elf32 -g -F dwarf -dDEBUG $< -o $@
 
 kernel.elf: $(OBJS) linker.ld
 	$(LD) $(LDFLAGS) -o kernel.elf $(OBJS)
 
 disk.img: stage1.bin stage2.bin kernel.bin
-	@echo "[DD]  $<"
+	@echo "[DD]  $^"
 	dd if=/dev/zero of=disk.img bs=512 count=2880 2>/dev/null
 	dd if=stage1.bin of=disk.img conv=notrunc 2>/dev/null
 	dd if=stage2.bin of=disk.img conv=notrunc bs=512 seek=1 2>/dev/null
@@ -75,7 +75,7 @@ run: disk.img
 	qemu-system-i386 -drive file=disk.img,format=raw,if=floppy
 
 # 调试模式（无图形化，等待GDB连接）
-debug: disk.img stage1d.o stage2d.o kernel.elf
+debug: disk.img stage1d.elf stage2d.elf kernel.elf
 	@echo "Starting QEMU in debug mode..."
 	@echo "Open another terminal and run: gdb -x debug.gdb"
 	@echo "Press Ctrl+A then X to exit QEMU"
