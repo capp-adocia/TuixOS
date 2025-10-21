@@ -35,7 +35,7 @@ static __attribute__((always_inline)) void kprint(const char* str, int row, int 
 /**
  * 清屏函数
  */
-void static __attribute__((always_inline)) clear_screen(void)
+static __attribute__((always_inline)) void clear_screen(void)
 {
     char* video = (char*)0xB8000;
     for(int i = 0;i < 80 * 25 * 2;i += 2)

@@ -36,36 +36,34 @@ void print_LOGO(void)
 
     kprint("Done!", 0, 0);
 }
-#define PAGE_SIZE 4096
-#define TOTAL_MEMORY 16 * 1024 * 1024
-#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE)
 
 
-/* 位图数组 */
-uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配4096
 
 void init_physical_memory(void)
 {
-    uint32_t memory_end = 16 * 1024 * 1024;
     uint32_t used_end = 1 * 1024 * 1024; // 内核结束的位置
-
-    // 1. 探测内存大小（最简单：先假设有16MB）
-    memset(phys_bitmap, 0 , sizeof(phys_bitmap));
-    // 2. 初始化位图：大部分标记为空闲
-
-    // 3. 标记已使用的区域（内核代码、位图本身等）
+    uint32_t kernel_pages = used_end / PAGE_SIZE; // 256页
+    uint32_t kernel_bytes = kernel_pages / 8; // 32字节
+    
+    // 探测内存大小
+    // 先标记已使用
+    memset(phys_bitmap, 0xFF, sizeof(phys_bitmap));
+    // 标记后512B - 32B 大小可用
+    memset(&phys_bitmap[kernel_bytes], 0x00, sizeof(phys_bitmap) - kernel_bytes);
 
 }
 
 
 void kernel_main(void) {
-    clear_screen();
-    print_LOGO();
+    // clear_screen();
+    // print_LOGO();
     clear_screen();
     kprint("Clean Screen!", 0, 0);
-    while(1){}
+    
     // 第1步：设置关键基础设施
     init_physical_memory();   // 内存管理
+    uint32_t p = alloc_page();
+    free_page(p);
     // init_kernel_heap();       // 动态分配
     // // 第2步：设置中断系统
     // init_idt();               // 中断描述符表
@@ -84,6 +82,7 @@ void kernel_main(void) {
     // asm volatile("sti");
     
     // kprint("中断系统已启动!", 12, 35);
+    while(1){}
 }
 
 // // kernel_main 中按顺序：

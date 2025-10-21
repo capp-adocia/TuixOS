@@ -3,7 +3,14 @@
 #ifndef I_H_MEMORY_H
 #define I_H_MEMORY_H
 
+#define PAGE_SIZE 4096
+#define TOTAL_MEMORY 16 * 1024 * 1024
+#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE) // 4096页
+/* 位图数组 */
+
 #include <types.h>
+
+extern uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配512字节 管理4096个物理页
 
 /**
  * 用指定值填充内存区域
@@ -39,6 +46,40 @@ void* memmove(void* dst, const void* src, size_t count);
  */
 int memcmp(const void* ptr1, const void* ptr2, size_t count);
 
+/**
+ * 分配一个物理页
+ */
+uint32_t alloc_page(void);
 
+/**
+ * 释放一个物理页
+ * @param phys_addrs 物理地址
+ */
+void free_page(uint32_t phys_addr);
+
+/**
+ * 获取内存信息
+ * @param total 总共地址
+ * @param free  空闲地址
+ */
+void get_memory_info(uint32_t* total, uint32_t* free);
+
+/**
+ * 检查页是否可用
+ * @param page_index 页索引
+ */
+bool page_is_free(uint32_t page_index);
+
+/**
+ * 标记页为已用（占用）
+ * @param page_index 页索引
+ */
+void mark_page_used(uint32_t page_index);
+
+/**
+ * 标记页为可用（空闲）
+ * @param page_index 页索引
+ */
+void mark_page_free(uint32_t page_index);
 
 #endif
