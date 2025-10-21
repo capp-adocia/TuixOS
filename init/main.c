@@ -1,7 +1,7 @@
-// init/main.c 实现C内核
+/* init/main.c 实现C内核 */
+#include <Hydrangea/screen.h>
+#include <Hydrangea/memory.h>
 #include <string.h>
-#include <screen.h>
-#include <memory.h>
 
 void _start(void);
 void kernel_main(void);

@@ -3,7 +3,7 @@
 #ifndef MM_MEMORY_H
 #define MM_MEMORY_H
 
-#include <memory.h>
+#include <Hydrangea/memory.h>
 
 void memset(void* dst, int val, size_t count)
 {
@@ -12,6 +12,21 @@ void memset(void* dst, int val, size_t count)
     // {
     //     dst[i] = val;
     // }
+}
+
+void* memcpy(void* dst, const void* src, size_t count)
+{
+
+}
+
+void* memmove(void* dst, const void* src, size_t count)
+{
+
+}
+
+int memcmp(const void* ptr1, const void* ptr2, size_t count)
+{
+    
 }
 
 #endif

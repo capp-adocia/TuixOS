@@ -6,92 +6,88 @@ LD = ld
 NASM = nasm
 OBJCOPY = objcopy
 
+# 目录配置
+BUILD_DIR = out
+SRC_DIRS = init mm lib boot
+
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-CFLAGS += -m32 -std=gnu99 -O0 -g
-CFLAGS += -fno-pie
+CFLAGS += -m32 -std=gnu99 -O0 -g -fno-pie -nostdinc
 CFLAGS += -I include/
-
-CFLAGS += -Wall -Wextra -Wpedantic
-CFLAGS += -Wshadow -Wpointer-arith 
-CFLAGS += -Wmissing-prototypes
-CFLAGS += -Wunreachable-code
-
-# 内核开发特殊豁免
-CFLAGS += -Wno-unused-parameter
-CFLAGS += -Wno-unused-function
-CFLAGS += -Wno-sign-conversion
-
-# CFLAGS += -Werror
+CFLAGS += -Wall -Wextra -Wpedantic -Wshadow -Wpointer-arith 
+CFLAGS += -Wmissing-prototypes -Wunreachable-code
+CFLAGS += -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion
 
 # 链接选项
 LDFLAGS = -m elf_i386 -nostdlib -T linker.ld
 
-# 目标文件
-KERNEL_OBJS = init/main.o
-MM_OBJS = mm/memory.o
+# 自动查找源文件
+C_SRCS = $(shell find $(SRC_DIRS) -name "*.c")
+ASM_SRCS = $(shell find boot -name "*.asm")
 
-OBJS = $(KERNEL_OBJS) $(MM_OBJS)
+# 生成目标文件路径
+C_OBJS = $(C_SRCS:%.c=$(BUILD_DIR)/%.o)
+BIN_TARGETS = $(BUILD_DIR)/stage1.bin $(BUILD_DIR)/stage2.bin $(BUILD_DIR)/kernel.bin
+DEBUG_ELF_TARGETS = $(BUILD_DIR)/stage1d.elf $(BUILD_DIR)/stage2d.elf
 
-all: disk.img
+all: $(BUILD_DIR)/disk.img
 
-# 引导MBR用的纯二进制（不带 DEBUG 标志）
-stage1.bin: boot/stage1.asm
-	@echo "[ASM]  $<"
+# 引导文件构建
+$(BUILD_DIR)/%.bin: boot/%.asm
+	@echo "[ASM]  $< -> $@"
+	@mkdir -p $(dir $@)
 	$(NASM) -I include/ -f bin $< -o $@
 
-# 第二阶段加载器
-stage2.bin: boot/stage2.asm
-	@echo "[ASM]  $<"
-	$(NASM) -I include/ -f bin $< -o $@
-
-# 编译C文件
-%.o: %.c
-	@echo "[CC]  $<"
+# C文件构建
+$(BUILD_DIR)/%.o: %.c
+	@echo "[CC]   $< -> $@"
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# 编译C内核为ELF，然后转为纯二进制
-kernel.bin: $(OBJS) linker.ld
-	@echo "[LD]  链接内核..."
-	$(LD) $(LDFLAGS) -o kernel.elf $(OBJS)
-	$(OBJCOPY) -O binary kernel.elf kernel.bin
+# 内核ELF和BIN
+$(BUILD_DIR)/kernel.elf: $(C_OBJS) linker.ld
+	@echo "[LD]   链接内核 -> $@"
+	$(LD) $(LDFLAGS) -o $@ $(C_OBJS)
 
-# 调试用的 ELF 文件（带 DEBUG 标志）
-stage1d.elf: boot/stage1.asm
+$(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel.elf
+	@echo "[BIN]  $< -> $@"
+	$(OBJCOPY) -O binary $< $@
+
+# 调试ELF文件
+$(BUILD_DIR)/stage1d.elf: boot/stage1.asm
+	@echo "[ASM-DBG] $< -> $@"
+	@mkdir -p $(dir $@)
 	$(NASM) -I include/ -f elf32 -g -F dwarf -dDEBUG $< -o $@
 
-stage2d.elf: boot/stage2.asm
+$(BUILD_DIR)/stage2d.elf: boot/stage2.asm
+	@echo "[ASM-DBG] $< -> $@"
+	@mkdir -p $(dir $@)
 	$(NASM) -I include/ -f elf32 -g -F dwarf -dDEBUG $< -o $@
 
-kernel.elf: $(OBJS) linker.ld
-	$(LD) $(LDFLAGS) -o kernel.elf $(OBJS)
+# 磁盘镜像
+$(BUILD_DIR)/disk.img: $(BIN_TARGETS)
+	@echo "[IMG]  制作磁盘镜像..."
+	dd if=/dev/zero of=$@ bs=512 count=2880 2>/dev/null
+	dd if=$(BUILD_DIR)/stage1.bin of=$@ conv=notrunc 2>/dev/null
+	dd if=$(BUILD_DIR)/stage2.bin of=$@ conv=notrunc bs=512 seek=1 2>/dev/null
+	dd if=$(BUILD_DIR)/kernel.bin of=$@ conv=notrunc bs=512 seek=5 2>/dev/null
 
-disk.img: stage1.bin stage2.bin kernel.bin
-	@echo "[DD]  制作磁盘镜像..."
-	dd if=/dev/zero of=disk.img bs=512 count=2880 2>/dev/null
-	dd if=stage1.bin of=disk.img conv=notrunc 2>/dev/null
-	dd if=stage2.bin of=disk.img conv=notrunc bs=512 seek=1 2>/dev/null
-	dd if=kernel.bin of=disk.img conv=notrunc bs=512 seek=5 2>/dev/null
+# 运行和调试
+run: $(BUILD_DIR)/disk.img
+	@echo "[QEMU] 启动系统..."
+	qemu-system-i386 -drive file=$<,format=raw,if=floppy
 
-# 软盘启动
-run: disk.img
-	@echo "[RUNNING...]  $<"
-	qemu-system-i386 -drive file=disk.img,format=raw,if=floppy
+debug: $(BUILD_DIR)/disk.img $(DEBUG_ELF_TARGETS) $(BUILD_DIR)/kernel.elf
+	@echo "[DEBUG] 启动调试模式..."
+	@echo "在另一个终端运行: gdb -x debug/debug.gdb"
+	qemu-system-i386 -drive file=$(BUILD_DIR)/disk.img,format=raw,if=floppy -s -S -nographic
 
-# 调试模式（无图形化，等待GDB连接）
-debug: disk.img stage1d.elf stage2d.elf kernel.elf
-	@echo "Starting QEMU in debug mode..."
-	@echo "Open another terminal and run: gdb -x debug.gdb"
-	@echo "Press Ctrl+A then X to exit QEMU"
-	qemu-system-i386 -drive file=disk.img,format=raw,if=floppy  -s -S -nographic
-	
+# 清理
 clean:
-	rm -f *.bin *.o *.log *.img *.elf
-	rm -f init/*.o mm/*.o
+	rm -rf $(BUILD_DIR)/
 
 help:
-	@echo "Available Object:"
+	@echo "构建目标:"
 	@echo "  all     - 构建完整系统"
 	@echo "  run     - 构建并运行"
 	@echo "  debug   - 构建调试版本并启动QEMU+GDB"

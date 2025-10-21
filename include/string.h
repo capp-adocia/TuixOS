@@ -39,5 +39,31 @@ static __attribute__((always_inline)) void int_to_str(int num, char* buffer)
     }
 }
 
+/**
+ * 字符串复制
+ * @param dst 目标缓冲区
+ * @param src 源字符串
+ */
+static __attribute__((always_inline)) char* strcpy(char* dst, const char* src);
+
+/**
+ * 安全字符串复制（带长度限制）
+ */
+static __attribute__((always_inline)) char* strncpy(char* dst, const char* src, size_t n);
+
+/**
+ * 字符串连接
+ */
+static __attribute__((always_inline)) char* strcat(char* dst, const char* src);
+
+static __attribute__((always_inline)) char* strncat(char* dst, const char* src, size_t n);
+
+
+/**
+ * 字符串比较
+ */
+static __attribute__((always_inline)) int strcmp(const char* s1, const char* s2);
+
+static __attribute__((always_inline)) int strncmp(const char* s1, const char* s2, size_t n);
 
 #endif

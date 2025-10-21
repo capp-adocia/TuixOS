@@ -1,7 +1,7 @@
 # HydrangeaOS
 
 `绣球操作系统`
-![头像](./image/image.png)
+![头像](./img/image.png)
 
 stage1.asm (扇区1)
     ↓ 收集基本硬件信息

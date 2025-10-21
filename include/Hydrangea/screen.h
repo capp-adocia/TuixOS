@@ -1,7 +1,7 @@
-/* include/screen.h */
+/* include/Hydrangea/screen.h */
 
-#ifndef I_SCREEN_H
-#define I_SCREEN_H
+#ifndef I_H_SCREEN_H
+#define I_H_SCREEN_H
 
 #include <types.h>
 
