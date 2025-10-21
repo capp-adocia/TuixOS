@@ -21,23 +21,12 @@ static __attribute__((always_inline)) size_t strlen(const char* str)
  * @param num 待转换的整数
  * @param buffer 输出字符串
  */
-static __attribute__((always_inline)) void int_to_str(int num, char* buffer)
-{
-    if (num < 10) {
-        buffer[0] = '0' + num;
-        buffer[1] = '\0';
-    } else if (num < 100) {
-        buffer[0] = '0' + (num / 10);
-        buffer[1] = '0' + (num % 10);
-        buffer[2] = '\0';
-    } else {
-        // 处理三位数
-        buffer[0] = '0' + (num / 100);
-        buffer[1] = '0' + ((num / 10) % 10);
-        buffer[2] = '0' + (num % 10);
-        buffer[3] = '\0';
-    }
-}
+void int_to_str(int num, char* buffer);
+/**
+ * 字符串反转
+ * @param str 待转换的字符串
+ */
+void reverse_str(char* str);
 
 /**
  * 字符串复制

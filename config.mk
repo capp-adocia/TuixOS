@@ -8,7 +8,7 @@ OBJCOPY = objcopy
 
 # 目录配置
 BUILD_DIR = out
-SRC_DIRS = init mm lib boot
+SRC_DIRS = init mm lib boot drivers
 
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs

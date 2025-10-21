@@ -4,6 +4,7 @@
 #define I_H_SCREEN_H
 
 #include <types.h>
+#include <stdarg.h>
 
 /**
  * 在指定位置输出一个字符
@@ -17,6 +18,14 @@ static __attribute__((always_inline)) void put_char(const char c, int row, int c
     video[0] = c;
     video[1] = 0x0E;
 }
+
+/**
+ * 在指定位置格式化输出
+ * @param row 行位置 (0-24)
+ * @param col 列位置 (0-79)
+ * @param fmt 可变参数...
+ */
+void kprintf(int row, int col, const char* fmt, ...);
 
 /**
  * 在指定位置输出一个字符串

@@ -63,20 +63,29 @@ void free_page(uint32_t phys_addr)
 
 void get_memory_info(uint32_t* total, uint32_t* free)
 {
-    // 获取总共有多大
+    // 设置总页数
     *total = TOTAL_PAGES;
-    int count = 0;
-    for (size_t i = 0; i < TOTAL_PAGES; i++)
-    {
-        int page_index = i / 8;
-        int page_offset = i % 8;
-        if(phys_bitmap[page_index] & (1 << page_index))
-        {
-            count++;
+    
+    // 统计空闲页数
+    uint32_t free_count = 0;
+    for (size_t i = 0; i < TOTAL_PAGES; i++) {
+        uint32_t byte_index = i / 8;
+        uint32_t bit_index = i % 8;
+        
+        // 检查该位是否为0（空闲）
+        if (!(phys_bitmap[byte_index] & (1 << bit_index))) {
+            free_count++;
         }
     }
-    kprint(int_to_str(count), 4, 10);
     
+    *free = free_count;
+    
+    // 如果要打印，需要字符串缓冲区
+    char total_str[32], free_str[32];
+    int_to_str(*total, total_str);
+    int_to_str(*free, free_str);
+    kprintf(4, 10, "Total: %s, Free: %s", total_str, free_str);
+    kprintf(4, 10, "Total: %d, Free: %d", TOTAL_PAGES, free_count);
 }
 
 bool page_is_free(uint32_t page_index)
