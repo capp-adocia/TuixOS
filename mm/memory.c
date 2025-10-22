@@ -34,6 +34,18 @@ int memcmp(const void* ptr1, const void* ptr2, size_t count)
     
 }
 
+void init_physical_memory(void)
+{
+    uint32_t used_end = 1 * 1024 * 1024; // 内核结束的位置
+    uint32_t kernel_pages = used_end / PAGE_SIZE; // 256页
+    uint32_t kernel_bytes = kernel_pages / 8; // 32字节
+    // 探测内存大小
+    // 先标记已使用
+    memset(phys_bitmap, 0xFF, sizeof(phys_bitmap));
+    // 标记后512B - 32B 大小可用
+    memset(&phys_bitmap[kernel_bytes], 0x00, sizeof(phys_bitmap) - kernel_bytes);
+}
+
 uint32_t alloc_page(void)
 {
     // 从位图中一页一页找空闲的，如果该位为0则找到空闲的物理页
@@ -64,7 +76,7 @@ void free_page(uint32_t phys_addr)
 void get_memory_info(uint32_t* total, uint32_t* free)
 {
     // 设置总页数
-    *total = TOTAL_PAGES;
+    *total = TOTAL_PAGES; // 存储的是二进制4096
     
     // 统计空闲页数
     uint32_t free_count = 0;
@@ -79,18 +91,15 @@ void get_memory_info(uint32_t* total, uint32_t* free)
     }
     
     *free = free_count;
-    
-    // 如果要打印，需要字符串缓冲区
-    char total_str[32], free_str[32];
-    int_to_str(*total, total_str);
-    int_to_str(*free, free_str);
-    kprintf(4, 10, "Total: %s, Free: %s", total_str, free_str);
-    kprintf(4, 10, "Total: %d, Free: %d", TOTAL_PAGES, free_count);
 }
 
 bool page_is_free(uint32_t page_index)
 {
+    if(page_index >= TOTAL_PAGES) return false;
 
+    int page_byte = page_index / 8;
+    int page_offset = page_index % 8;
+    return !(phys_bitmap[page_byte] & (1 << page_offset));
 }
 
 void mark_page_used(uint32_t page_index)
@@ -100,6 +109,22 @@ void mark_page_used(uint32_t page_index)
 
 void mark_page_free(uint32_t page_index)
 {
+
+}
+
+void init_kernel_heap(void)
+{
+
+}
+
+void* kmalloc(size_t size)
+{
+
+}
+
+void kfree(void* ptr)
+{
+
 
 }
 

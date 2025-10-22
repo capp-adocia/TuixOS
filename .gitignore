@@ -3,5 +3,4 @@
 *.o
 *.log
 *.elf
-debug/
 out/

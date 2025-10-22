@@ -39,36 +39,29 @@ void print_LOGO(void)
 }
 
 
-
-void init_physical_memory(void)
-{
-    uint32_t used_end = 1 * 1024 * 1024; // 内核结束的位置
-    uint32_t kernel_pages = used_end / PAGE_SIZE; // 256页
-    uint32_t kernel_bytes = kernel_pages / 8; // 32字节
-    
-    // 探测内存大小
-    // 先标记已使用
-    memset(phys_bitmap, 0xFF, sizeof(phys_bitmap));
-    // 标记后512B - 32B 大小可用
-    memset(&phys_bitmap[kernel_bytes], 0x00, sizeof(phys_bitmap) - kernel_bytes);
-
-}
-
-
 void kernel_main(void) {
     // clear_screen();
     // print_LOGO();
     clear_screen();
-    kprintf(0, 0, "%s", "Clean Screen!");
+    kprintf(0, 0, "%s", "HydrangeaOS v0.01");
     
     // 第1步：设置关键基础设施
     init_physical_memory();   // 内存管理
     uint32_t p = alloc_page();
     free_page(p);
-    uint32_t* total = NULL;
-    uint32_t* free = NULL;
-    get_memory_info(total, free);
-    // init_kernel_heap();       // 动态分配
+    uint32_t total;
+    uint32_t free;
+    get_memory_info(&total, &free);
+    char t[32], f[32];
+    kprintf(2, 0, "%d", total);
+    kprintf(3, 0, "%d", free);
+    init_kernel_heap();       // 动态分配
+
+    if (page_is_free(256)) {  // 检查1MB后的第一页
+        kprintf(4, 0,"Page 256 is free");
+    }
+    else kprintf(4, 0,"Page 256 is not free");
+     
     // // 第2步：设置中断系统
     // init_idt();               // 中断描述符表
     // init_pic();               // 中断控制器

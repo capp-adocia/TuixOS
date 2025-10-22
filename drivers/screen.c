@@ -24,7 +24,7 @@ void kprintf(int row, int col, const char* fmt, ...)
                             buffer[pos++] = '-';
                             num = -num;
                         }
-                        // 简单实现：只处理正整数
+                        // 只处理正整数
                         char num_buf[32];
                         int j = 0;
                         while (num > 0) {

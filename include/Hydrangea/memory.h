@@ -47,6 +47,11 @@ void* memmove(void* dst, const void* src, size_t count);
 int memcmp(const void* ptr1, const void* ptr2, size_t count);
 
 /**
+ * 初始化物理内存（物理页）
+ */
+void init_physical_memory(void);
+
+/**
  * 分配一个物理页
  */
 uint32_t alloc_page(void);
@@ -81,5 +86,22 @@ void mark_page_used(uint32_t page_index);
  * @param page_index 页索引
  */
 void mark_page_free(uint32_t page_index);
+
+/**
+ * 初始化堆分配
+ */
+void init_kernel_heap(void);
+
+/**
+ * 堆分配
+ * @param size 分配大小
+ */
+void* kmalloc(size_t size);
+
+/**
+ * 堆释放
+ * @param ptr 释放指定位置的堆
+ */
+void kfree(void* ptr);
 
 #endif
