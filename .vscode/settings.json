@@ -22,7 +22,8 @@
         "string": "c",
         "unordered_map": "c",
         "vector": "c",
-        "algorithm": "c"
+        "algorithm": "c",
+        "cstdint": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

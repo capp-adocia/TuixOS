@@ -10,6 +10,8 @@
 #define HEAP_INIT_PAGES 4 // 堆初始分配4页
 #define HEAP_ALIGN 8  // 8字节对齐
 #define MIN_BLOCK_SIZE (sizeof(struct heap_block) + HEAP_ALIGN) // 最小分配大小
+#define HEAP_HEAD_SIZE (sizeof(struct heap_block)) // 堆头部大小
+#define HEAP_HEAD_PTR(ptr) ((struct heap_block*)(ptr)) // 强制转换为堆头指针类型
 
 // 物理页位图数组
 extern uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配512字节 管理4096个物理页
@@ -147,12 +149,13 @@ void init_kernel_heap(void);
 /**
  * 堆分配
  * @param size 分配大小
+ * @return 指向数据区的地址
  */
 void* kmalloc(size_t size);
 
 /**
  * 堆释放
- * @param ptr 释放指定位置的堆
+ * @param ptr 释放指定位置的堆（接收参数是数据区指针）
  */
 void kfree(void* ptr);
 

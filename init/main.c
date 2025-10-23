@@ -38,7 +38,6 @@ void print_LOGO(void)
     kprint("Done!", 0, 0);
 }
 
-
 void kernel_main(void) {
     // clear_screen();
     // print_LOGO();
@@ -61,10 +60,11 @@ void kernel_main(void) {
 
     init_kernel_heap();       // 动态分配
     int page_index = 259;
-    if (page_is_free(page_index)) {  // 检查1MB后的...
+    if (page_is_free(page_index)) {  // 检查1MB后的页...
         kprintf(4, 0,"Page %d is free", page_index);
     }
     else kprintf(4, 0,"Page %d is not free", page_index);
+
      
     // // 第2步：设置中断系统
     // init_idt();               // 中断描述符表

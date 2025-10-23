@@ -254,8 +254,8 @@ void init_kernel_heap(void)
     kheap.alloc_count = 0;
     kheap.free_count = 0;
 
-    // 初始化第一个大空闲块
-    struct heap_block* first_block = (struct heap_block*)heap_phys;
+    // 初始化第一个大空闲块（存放在1MB位置处）
+    struct heap_block* first_block = HEAP_HEAD_PTR(heap_phys);
     first_block->size = kheap.total_size;
     first_block->used = 0; // 标记为空闲
 
@@ -267,10 +267,10 @@ void init_kernel_heap(void)
 void* kmalloc(size_t size)
 {
     // 这是实际需要的大小
-    size_t total_size = size + sizeof(struct heap_block);
+    size_t total_size = size + HEAP_HEAD_SIZE;
 
-    struct heap_block* current = (struct heap_block*)kheap.start_addr;
-    struct heap_block* end = (struct heap_block*)kheap.end_addr;
+    struct heap_block* current = HEAP_HEAD_PTR(kheap.start_addr);
+    struct heap_block* end = HEAP_HEAD_PTR(kheap.end_addr);
     
     while ((char*)current < (char*)end)
     {
@@ -284,11 +284,10 @@ void* kmalloc(size_t size)
             kheap.used_size += size;
             
             // 返回数据区地址（跳过头部）
-            return (void*)((char*)current + sizeof(struct heap_block));
+            return (void*)((char*)current + HEAP_HEAD_SIZE);
         }
-        
         // 移动到下一个块
-        current = (struct heap_block*)((char*)current + current->size);
+        current = HEAP_HEAD_PTR((char*)current + current->size);
     }
     
     // 内存不足
@@ -297,7 +296,12 @@ void* kmalloc(size_t size)
 
 void kfree(void* ptr)
 {
+    // 释放指定数据区地址的堆内存，先向前移动头部那么多字节，看看该区的信息
+    struct heap_block* block = HEAP_HEAD_PTR((char*)ptr - HEAP_HEAD_SIZE);
+    block->used = 0;
 
+    kheap.free_count++;
+    kheap.used_size -= (block->size - HEAP_HEAD_SIZE);
 }
 
 #endif
