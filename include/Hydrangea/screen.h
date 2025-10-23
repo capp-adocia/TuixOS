@@ -3,7 +3,7 @@
 #ifndef I_H_SCREEN_H
 #define I_H_SCREEN_H
 
-#include <types.h>
+#include <stddef.h>
 #include <stdarg.h>
 
 /**

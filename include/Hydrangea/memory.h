@@ -3,7 +3,7 @@
 #ifndef I_H_MEMORY_H
 #define I_H_MEMORY_H
 
-#include <types.h>
+#include <stddef.h>
 #define TOTAL_MEMORY 16 * 1024 * 1024
 #define PAGE_SIZE 4096
 #define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE) // 4096页
@@ -16,20 +16,21 @@ extern uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配512字节 管理4096个物
 // 堆块头
 struct heap_block
 {
-    size_t size;        // 块大小（包含头部的总大小）
+    size_t size;        // 块大小 = 头部 + 数据区
     int used;           // 使用标志：1=已分配, 0=空闲
 };
 // 堆块数据
 struct kernel_heap
 {
-    void* strat_addr;   // 起始地址
+    void* start_addr;   // 起始地址
     void* end_addr;     // 结束地址 
-    size_t total_size;  // 总大小
-    size_t used_size;   // 已使用大小
+    size_t total_size;  // 整个堆空间总大小
+    size_t used_size;   // 整个堆用户已使用量
+    size_t alloc_count; // 用户分配次数
+    size_t free_count;  // 用户释放次数
 };
 // 全局堆实例
 extern struct kernel_heap kheap;
-
 
 /**
  * 用指定值填充内存区域
@@ -38,13 +39,14 @@ extern struct kernel_heap kheap;
  * @param count 要填充的字节数
  * @return 返回dst（便于链式调用）
  */
-void memset(void* dst, int val, size_t count);
+void* memset(void* dst, int val, size_t count);
 
 /**
  * 内存复制（不处理重叠）
  * @param dst 目标地址
  * @param src 源地址  
  * @param count 字节数
+ * @return 目标指针
  */
 void* memcpy(void* dst, const void* src, size_t count);
 
@@ -53,6 +55,7 @@ void* memcpy(void* dst, const void* src, size_t count);
  * @param dst 目标地址
  * @param src 源地址
  * @param count 字节数
+ * @return 目标指针
  */
 void* memmove(void* dst, const void* src, size_t count);
 
@@ -72,26 +75,43 @@ void init_physical_memory(void);
 
 /**
  * 单页分配
+ * @return 物理地址
  */
 uint32_t alloc_page(void);
 
 /**
  * 分配指定数量的物理页（连续分配）
- * @param page_size 分配的页数  
+ * @param page_count 分配的页数  
+ * @return 物理地址
  */
-uint32_t alloc_pages(size_t page_size);
+uint32_t alloc_pages(size_t page_count);
 
 /**
  * 分配指定数量的物理页（离散分配）
- * @param page_size 分配的页数  
+ * @param page_array 页地址数组
+ * @param page_count 分配的页数
+ * @return 错误码
  */
-uint32_t alloc_pages_discrete(size_t page_size);
+int alloc_pages_discrete(uint32_t* page_array, size_t page_count);
 
 /**
  * 释放一个物理页
  * @param phys_addrs 物理地址
  */
 void free_page(uint32_t phys_addr);
+
+/**
+ * 释放连续的物理页
+ * @param page_count 释放的页数
+ */
+void free_pages(uint32_t phys_addr, size_t page_count);
+
+/**
+ * 释放离散的物理页
+ * @param page_array 页地址数组
+ * @param page_count 释放的页数
+ */
+void free_pages_discrete(uint32_t* page_array, size_t page_count);
 
 /**
  * 获取内存信息
@@ -103,6 +123,7 @@ void get_memory_info(uint32_t* total, uint32_t* free);
 /**
  * 检查页是否可用
  * @param page_index 页索引
+ * @return 是否可用
  */
 bool page_is_free(uint32_t page_index);
 

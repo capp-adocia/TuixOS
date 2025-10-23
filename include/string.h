@@ -3,7 +3,7 @@
 #ifndef I_STRING_H
 #define I_STRING_H
 
-#include <types.h>
+#include <stddef.h>
 
 /**
  * 计算字符串长度

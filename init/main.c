@@ -47,9 +47,11 @@ void kernel_main(void) {
     
     // 第1步：设置关键基础设施
     init_physical_memory();   // 内存管理
-    // uint32_t p = alloc_page();
-    // free_page(p);
-    alloc_pages(10);
+    uint32_t addr[10];
+    // uint32_t p = alloc_pages_discrete(addr, 10);
+    // free_pages_discrete(addr, 9);
+    // uint32_t p = alloc_pages(10);
+    // free_pages(p, 3);
     uint32_t total;
     uint32_t free;
     get_memory_info(&total, &free);
@@ -57,11 +59,12 @@ void kernel_main(void) {
     kprintf(2, 0, "%d", total);
     kprintf(3, 0, "%d", free);
 
-    if (page_is_free(256)) {  // 检查1MB后的第一页
-        kprintf(4, 0,"Page 256 is free");
-    }
-    else kprintf(4, 0,"Page 256 is not free");
     init_kernel_heap();       // 动态分配
+    int page_index = 259;
+    if (page_is_free(page_index)) {  // 检查1MB后的...
+        kprintf(4, 0,"Page %d is free", page_index);
+    }
+    else kprintf(4, 0,"Page %d is not free", page_index);
      
     // // 第2步：设置中断系统
     // init_idt();               // 中断描述符表

@@ -6,37 +6,51 @@
 #include <Hydrangea/memory.h>
 #include <Hydrangea/screen.h>
 #include <string.h>
+#include <errno.h>
 
 uint8_t phys_bitmap[TOTAL_PAGES / 8];
 struct kernel_heap kheap;
 
-void memset(void* dst, int val, size_t count)
+void* memset(void* dst, int val, size_t count)
 {
-    char* temp = (char*)(dst); // 先进行类型转换
-    for (size_t i = 0; i < count; i++)
-    {
-        *temp++ = (char*)val;
+    if (dst == NULL) 
+        return NULL;
+    
+    char* temp = (char*)dst;
+    for (size_t i = 0; i < count; i++) {
+        *temp++ = (char)val;
     }
     
+    return dst;
 }
 
-// 不处理重叠区域
 void* memcpy(void* dst, const void* src, size_t count)
 {
-    char* dst_t = (char*)(dst);
-    char* src_t = (char*)(src);
-    while (count--)
-    {
+    if (dst == NULL || src == NULL)
+        return NULL;
+    
+    if (count == 0)
+        return dst;
+    
+    char* dst_t = (char*)dst;
+    const char* src_t = (const char*)src;
+    
+    while (count--) {
         *dst_t++ = *src_t++;
     }
     return dst;
 }
 
-// 处理重叠区域
 void* memmove(void* dst, const void* src, size_t count)
 {
-    char* d = dst;
-    const char* s = src;
+    if (dst == NULL || src == NULL)
+        return NULL;
+    
+    if (count == 0 || dst == src)
+        return dst;
+    
+    char* d = (char*)dst;
+    const char* s = (const char*)src;
     
     if (d < s) {
         // 目标在源前面，正向拷贝
@@ -56,8 +70,15 @@ void* memmove(void* dst, const void* src, size_t count)
 
 int memcmp(const void* ptr1, const void* ptr2, size_t count)
 {
-    const unsigned char* p1 = ptr1;
-    const unsigned char* p2 = ptr2;
+    if (ptr1 == NULL || ptr2 == NULL)
+        return -1;  // 或者返回不相等
+    
+    // 如果count为0，认为相等
+    if (count == 0)
+        return 0;
+    
+    const unsigned char* p1 = (const unsigned char*)ptr1;
+    const unsigned char* p2 = (const unsigned char*)ptr2;
     
     while (count-- > 0) {
         if (*p1 != *p2) {
@@ -88,7 +109,12 @@ uint32_t alloc_page(void)
 
 uint32_t alloc_pages(size_t page_count)
 {
-    if (page_count == 0) return 0;
+    if (page_count == 0) 
+        return 0;
+    
+    // 检查请求页数是否合理
+    if (page_count > TOTAL_PAGES)
+        return 0;
     
     size_t consecutive_free = 0;
     size_t start_page = 0;
@@ -98,46 +124,46 @@ uint32_t alloc_pages(size_t page_count)
         uint32_t bit_index = i % 8;
         
         if (!(phys_bitmap[byte_index] & (1 << bit_index))) {
-            // 找到空闲页
             if (consecutive_free == 0) {
-                start_page = i;  // 记录连续空闲的开始位置
+                start_page = i;
             }
             consecutive_free++;
             
-            // 检查是否找到足够的连续页
             if (consecutive_free == page_count) {
-                // 标记这些页为已使用
                 for (size_t j = start_page; j < start_page + page_count; j++) {
                     mark_page_used(j);
                 }
                 return start_page * PAGE_SIZE;
             }
         } else {
-            // 遇到已使用页，重置计数器
             consecutive_free = 0;
         }
     }
     
-    return 0; // 内存不足或没有足够连续页
+    return 0; // 内存不足
 }
 
-uint32_t alloc_pages_discrete(size_t page_size)
+int alloc_pages_discrete(uint32_t* page_array, size_t page_count)
 {
-//    uint32_t* pages = /* 需要先有个地方存储页地址 */;
-//     for (size_t i = 0; i < page_count; i++) {
-//         pages[i] = alloc_page();  // 调用你的单页分配器
-//         if (pages[i] == 0) {
-//             // 分配失败，释放已分配的页
-//             for (size_t j = 0; j < i; j++) {
-//                 free_page(pages[j]);
-//             }
-//             return NULL;
-//         }
-//     }
-//     return pages;
+    if (page_array == NULL) 
+        return -EINVAL;
+    
+    if (page_count == 0)
+        return -EINVAL;
+    
+    for (size_t i = 0; i < page_count; i++) {
+        page_array[i] = alloc_page();
+        if (page_array[i] == 0) {
+            // 分配失败，释放已分配的页
+            for (size_t j = 0; j < i; j++) {
+                free_page(page_array[j]);
+            }
+            return -ENOMEM;  // 内存不足
+        }
+    }
+    return 0;
 }
 
-/* TODO:待补充要加入释放连续页和离散页 */
 void free_page(uint32_t phys_addr)
 {
     // 找到位图中的位置，并设置为0
@@ -145,6 +171,27 @@ void free_page(uint32_t phys_addr)
     int page_byte = page_index / 8;
     int page_offset = page_index % 8;
     mark_page_free(page_index);
+}
+
+void free_pages(uint32_t phys_addr, size_t page_count)
+{
+    int page_index = phys_addr / PAGE_SIZE;
+    if (page_index + page_count > TOTAL_PAGES) {
+        // 超出内存范围
+        return -EMMBADADDR;
+    }
+    while(page_count--)
+    {
+        mark_page_free(page_index++);
+    }
+}
+
+void free_pages_discrete(uint32_t* page_array, size_t page_count)
+{
+    for (size_t i = 0; i < page_count; i++)
+    {
+        if(page_array[i] != 0) free_page(page_array[i]);
+    }
 }
 
 void get_memory_info(uint32_t* total, uint32_t* free)
@@ -163,7 +210,6 @@ void get_memory_info(uint32_t* total, uint32_t* free)
             free_count++;
         }
     }
-    
     *free = free_count;
 }
 
@@ -193,12 +239,60 @@ void mark_page_free(uint32_t page_index)
 // 根据物理页分配情况初始化
 void init_kernel_heap(void)
 {
+    // 从物理内存分配连续的堆空间
+    uint32_t heap_phys = alloc_pages(HEAP_INIT_PAGES);
+    if(!heap_phys)
+    {
+        kprintf(6, 0, "init_kernel_heap not alloc heap!");
+        return;
+    }
+    // 初始化堆管理结构
+    kheap.start_addr = (void*)heap_phys;
+    kheap.end_addr = (void*)(heap_phys + HEAP_INIT_PAGES * PAGE_SIZE);
+    kheap.total_size = HEAP_INIT_PAGES * PAGE_SIZE;
+    kheap.used_size = 0;
+    kheap.alloc_count = 0;
+    kheap.free_count = 0;
 
+    // 初始化第一个大空闲块
+    struct heap_block* first_block = (struct heap_block*)heap_phys;
+    first_block->size = kheap.total_size;
+    first_block->used = 0; // 标记为空闲
+
+    kprintf(6, 0, "kernel_heap: 0x%x -> 0x%x (%d KB)", 
+       heap_phys, heap_phys + kheap.total_size, 
+       kheap.total_size / 1024);
 }
 
 void* kmalloc(size_t size)
 {
+    // 这是实际需要的大小
+    size_t total_size = size + sizeof(struct heap_block);
 
+    struct heap_block* current = (struct heap_block*)kheap.start_addr;
+    struct heap_block* end = (struct heap_block*)kheap.end_addr;
+    
+    while ((char*)current < (char*)end)
+    {
+        if (!current->used && current->size >= total_size)
+        {
+            // 找到合适的空闲块，直接分配整个块
+            current->used = 1;
+            
+            // 更新统计
+            kheap.alloc_count++;
+            kheap.used_size += size;
+            
+            // 返回数据区地址（跳过头部）
+            return (void*)((char*)current + sizeof(struct heap_block));
+        }
+        
+        // 移动到下一个块
+        current = (struct heap_block*)((char*)current + current->size);
+    }
+    
+    // 内存不足
+    return NULL;
 }
 
 void kfree(void* ptr)

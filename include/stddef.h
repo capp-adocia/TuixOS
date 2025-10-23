@@ -3,9 +3,26 @@
 #ifndef I_STDDEF_H
 #define I_STDDEF_H
 
-typedef unsigned int size_t;
-typedef int ssize_t;
+/* 基础整数类型 */
+typedef unsigned char  uint8_t;
+typedef unsigned short uint16_t;  
+typedef unsigned int   uint32_t;
+typedef unsigned long long uint64_t;
+
+typedef signed char    int8_t;
+typedef signed short   int16_t;
+typedef signed int     int32_t;
+typedef signed long long int64_t;
+
+/* 大小类型 */
+typedef unsigned int   size_t;
+typedef signed int     ssize_t;
 typedef int ptrdiff_t;
+
+/* 布尔类型 */
+typedef int bool;
+#define true 1
+#define false 0
 
 #define NULL ((void*)0)
 

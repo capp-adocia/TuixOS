@@ -24,16 +24,39 @@ void kprintf(int row, int col, const char* fmt, ...)
                             buffer[pos++] = '-';
                             num = -num;
                         }
-                        // 只处理正整数
                         char num_buf[32];
                         int j = 0;
                         while (num > 0) {
                             num_buf[j++] = '0' + (num % 10);
                             num /= 10;
                         }
-                        // 反向输出
                         while (j > 0) {
                             buffer[pos++] = num_buf[--j];
+                        }
+                    }
+                    break;
+                }
+                case 'x': {  // 十六进制整数
+                    unsigned int num = va_arg(args, unsigned int);
+                    char hex_buf[32];
+                    int j = 0;
+                    
+                    if (num == 0) {
+                        buffer[pos++] = '0';
+                    } else {
+                        // 转换为十六进制字符串（反向）
+                        while (num > 0) {
+                            int digit = num % 16;
+                            if (digit < 10) {
+                                hex_buf[j++] = '0' + digit;
+                            } else {
+                                hex_buf[j++] = 'a' + (digit - 10);
+                            }
+                            num /= 16;
+                        }
+                        // 反向输出
+                        while (j > 0) {
+                            buffer[pos++] = hex_buf[--j];
                         }
                     }
                     break;

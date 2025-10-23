@@ -1,7 +1,7 @@
 /* include/stdarg.h */
 
-#ifndef STDARG_H
-#define STDARG_H
+#ifndef I_STDARG_H
+#define I_STDARG_H
 
 typedef char* va_list;
 // 可变参数
