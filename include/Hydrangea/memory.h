@@ -3,14 +3,33 @@
 #ifndef I_H_MEMORY_H
 #define I_H_MEMORY_H
 
-#define PAGE_SIZE 4096
-#define TOTAL_MEMORY 16 * 1024 * 1024
-#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE) // 4096页
-/* 位图数组 */
-
 #include <types.h>
+#define TOTAL_MEMORY 16 * 1024 * 1024
+#define PAGE_SIZE 4096
+#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE) // 4096页
+#define HEAP_INIT_PAGES 4 // 堆初始分配4页
+#define HEAP_ALIGN 8  // 8字节对齐
+#define MIN_BLOCK_SIZE (sizeof(struct heap_block) + HEAP_ALIGN) // 最小分配大小
 
+// 物理页位图数组
 extern uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配512字节 管理4096个物理页
+// 堆块头
+struct heap_block
+{
+    size_t size;        // 块大小（包含头部的总大小）
+    int used;           // 使用标志：1=已分配, 0=空闲
+};
+// 堆块数据
+struct kernel_heap
+{
+    void* strat_addr;   // 起始地址
+    void* end_addr;     // 结束地址 
+    size_t total_size;  // 总大小
+    size_t used_size;   // 已使用大小
+};
+// 全局堆实例
+extern struct kernel_heap kheap;
+
 
 /**
  * 用指定值填充内存区域
@@ -30,7 +49,7 @@ void memset(void* dst, int val, size_t count);
 void* memcpy(void* dst, const void* src, size_t count);
 
 /**
- * 内存复制（处理重叠区域）
+ * 内存复制（处理重叠区域，可以保证安全）
  * @param dst 目标地址
  * @param src 源地址
  * @param count 字节数
@@ -42,7 +61,7 @@ void* memmove(void* dst, const void* src, size_t count);
  * @param ptr1 内存块1
  * @param ptr2 内存块2  
  * @param count 比较字节数
- * @return 0=相等, <0 ptr1<ptr2, >0 ptr1>ptr2
+ * @return 当ptr1 < ptr2时返回-1, 当ptr1 > ptr2时返回1，相等返回0
  */
 int memcmp(const void* ptr1, const void* ptr2, size_t count);
 
@@ -52,9 +71,21 @@ int memcmp(const void* ptr1, const void* ptr2, size_t count);
 void init_physical_memory(void);
 
 /**
- * 分配一个物理页
+ * 单页分配
  */
 uint32_t alloc_page(void);
+
+/**
+ * 分配指定数量的物理页（连续分配）
+ * @param page_size 分配的页数  
+ */
+uint32_t alloc_pages(size_t page_size);
+
+/**
+ * 分配指定数量的物理页（离散分配）
+ * @param page_size 分配的页数  
+ */
+uint32_t alloc_pages_discrete(size_t page_size);
 
 /**
  * 释放一个物理页
