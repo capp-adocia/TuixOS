@@ -23,7 +23,8 @@
         "unordered_map": "c",
         "vector": "c",
         "algorithm": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "def.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

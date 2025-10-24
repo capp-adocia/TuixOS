@@ -7,6 +7,7 @@
 #include <Hydrangea/screen.h>
 #include <string.h>
 #include <errno.h>
+#include <def.h>
 
 uint8_t phys_bitmap[TOTAL_PAGES / 8];
 struct kernel_heap kheap;
@@ -264,44 +265,99 @@ void init_kernel_heap(void)
        kheap.total_size / 1024);
 }
 
-void* kmalloc(size_t size)
+static void* try_allocate_block(struct heap_block* start, size_t total_size, size_t user_size)
 {
-    // 这是实际需要的大小
-    size_t total_size = size + HEAP_HEAD_SIZE;
-
-    struct heap_block* current = HEAP_HEAD_PTR(kheap.start_addr);
+    struct heap_block* current = start;
     struct heap_block* end = HEAP_HEAD_PTR(kheap.end_addr);
     
-    while ((char*)current < (char*)end)
+    while((char*)current < (char*)end)
     {
-        if (!current->used && current->size >= total_size)
+        if(!current->used && current->size >= total_size)
         {
-            // 找到合适的空闲块，直接分配整个块
-            current->used = 1;
+            // 检查是否可以分割
+            if(current->size >= total_size + HEAP_HEAD_SIZE + 8)
+            {
+                // 分割块
+                size_t remaining_size = current->size - total_size;
+                current->size = total_size;
+                current->used = 1;
+                
+                struct heap_block* new_block = HEAP_HEAD_PTR((char*)current + total_size);
+                new_block->size = remaining_size;
+                new_block->used = 0;
+            }
+            else current->used = 1; // 使用整个块
+
             
-            // 更新统计
             kheap.alloc_count++;
-            kheap.used_size += size;
-            
-            // 返回数据区地址（跳过头部）
+            kheap.used_size += user_size;
             return (void*)((char*)current + HEAP_HEAD_SIZE);
         }
-        // 移动到下一个块
+        
         current = HEAP_HEAD_PTR((char*)current + current->size);
     }
-    
-    // 内存不足
     return NULL;
+}
+
+void* kmalloc(size_t size)
+{
+    // 这是系统实际需要的大小
+    size_t total_size = size + HEAP_HEAD_SIZE;
+    struct heap_block* current = HEAP_HEAD_PTR(kheap.start_addr);
+    if(total_size % 8 != 0) // 需要按字节对齐分配
+        total_size = ((total_size + 7) / 8) * 8;
+        
+    // 尝试第一次分配
+    void* data_addr = try_allocate_block(current, total_size, size);
+
+    // 如果分配失败，则尝试合并成更大的块，再进行分配
+    if(!data_addr)
+    {
+        kmalloc_compact();
+        data_addr = try_allocate_block(current, total_size, size);
+    }
+    
+    return data_addr;
+}
+
+void kmalloc_compact(void)
+{
+    // 合并零散的内存空间
+    struct heap_block* cur_ptr = HEAP_HEAD_PTR(kheap.start_addr);
+    struct heap_block* end = HEAP_HEAD_PTR(kheap.end_addr);
+    
+    while ((char*)cur_ptr < (char*)end)
+    {
+        if (cur_ptr->used == 0) {
+            // 持续合并后续的空闲块
+            struct heap_block* next_ptr = HEAP_HEAD_PTR((char*)cur_ptr + cur_ptr->size);
+            
+            while ((char*)next_ptr < (char*)end && next_ptr->used == 0) {
+                cur_ptr->size += next_ptr->size;
+                next_ptr = HEAP_HEAD_PTR((char*)cur_ptr + cur_ptr->size);
+            }
+        }
+        
+        // 移动到下一个块
+        cur_ptr = HEAP_HEAD_PTR((char*)cur_ptr + cur_ptr->size);
+    }
 }
 
 void kfree(void* ptr)
 {
-    // 释放指定数据区地址的堆内存，先向前移动头部那么多字节，看看该区的信息
+    if (ptr == NULL) return;
+    
     struct heap_block* block = HEAP_HEAD_PTR((char*)ptr - HEAP_HEAD_SIZE);
+    size_t data_size = block->size - HEAP_HEAD_SIZE;
+    
+    #ifdef DEBUG
+    // 用特殊值填充，便于调试识别已释放内存
+    memset(ptr, 0xDE, data_size);
+    #endif
+    
     block->used = 0;
-
     kheap.free_count++;
-    kheap.used_size -= (block->size - HEAP_HEAD_SIZE);
+    kheap.used_size -= data_size;
 }
 
 #endif

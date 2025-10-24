@@ -154,6 +154,11 @@ void init_kernel_heap(void);
 void* kmalloc(size_t size);
 
 /**
+ * 尝试合并零散的堆
+ */
+void kmalloc_compact(void);
+
+/**
  * 堆释放
  * @param ptr 释放指定位置的堆（接收参数是数据区指针）
  */

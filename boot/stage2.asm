@@ -197,10 +197,10 @@ protected_mode_entry:
     mov es, ax
     mov ss, ax
     mov esp, 0x90000 ; 栈顶
-    mov ebp, 0
+    mov ebp, esp
 
-    call pm_clear_screen
-    call pm_print_string
+    ; call pm_clear_screen
+    ; call pm_print_string
     ; call pm_set_cursor
     ; 进入c代码
     jmp 0x9000
@@ -311,9 +311,23 @@ current_col dd 0
 ; 0xFFFC0000-0xFFFFFFFF:   256KB  保留 (BIOS ROM)
 
 gdt_start:
-    dq 0x0000000000000000
-    dw 0xFFFF, 0x0000, 0x9A00, 0x0040  ; 代码段 界限: 0x0FFFF (64KB)
-    dw 0xFFFF, 0x0000, 0x9200, 0x00CF  ; 数据段 界限: 0xFFFFF (4GB)
+    dq 0x0000000000000000    ; 空描述符
+    
+    ; 代码段 (0x08): 4GB, 执行/读
+    dw 0xFFFF                ; Limit 0:15
+    dw 0x0000                ; Base 0:15
+    db 0x00                  ; Base 16:23  
+    db 0x9A                  ; P=1, DPL=0, Code, Execute/Read
+    db 0xCF                  ; G=1, D=1, Limit 16:19=0xF
+    db 0x00                  ; Base 24:31
+    
+    ; 数据段 (0x10): 4GB, 读/写  
+    dw 0xFFFF                ; Limit 0:15
+    dw 0x0000                ; Base 0:15
+    db 0x00                  ; Base 16:23
+    db 0x92                  ; P=1, DPL=0, Data, Read/Write
+    db 0xCF                  ; G=1, D=1, Limit 16:19=0xF
+    db 0x00                  ; Base 24:31
 gdt_end:
 
 gdt_descriptor:

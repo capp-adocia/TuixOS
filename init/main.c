@@ -1,17 +1,19 @@
 /* init/main.c 实现C内核 */
+/* init/main.c 实现C内核 */
 #include <Hydrangea/screen.h>
 #include <Hydrangea/memory.h>
 #include <string.h>
 #include <stddef.h>
+#include <def.h>
 
-void _start(void);
+// 1. 先声明所有函数
 void kernel_main(void);
+void print_LOGO(void);
+void test_malloc(void);
+void test_compact_debug(void);
+void test_compact2(void);
 
-void _start(void)
-{
-    kernel_main();
-}
-
+// 2. 常量定义
 const char* logo[] = {
     "H   H  Y   Y  DDDD   RRRRR     A    N   N  GGGG  EEEEEE    A  ",
     "H   H   Y Y   D   D  R    R   A A   NN  N G      E        A A ",
@@ -20,76 +22,97 @@ const char* logo[] = {
     "H   H    Y    DDDD   R  RRR A     A N   N  GGGG  EEEEEE A     A"
 };
 
+// 3. 入口点
+__attribute__((naked)) void _start(void)
+{
+    asm volatile(
+        "call kernel_main\n"
+        "hlt\n"
+        "jmp .\n"
+    );
+}
+
+// 4. 辅助函数
 void print_LOGO(void)
 {
     int logo_height = sizeof(logo) / sizeof(logo[0]);
-    // 显示logo
     for (int i = 0; i < logo_height; i++) {
         kprint(logo[i], 9 + i, 9);
     }
-    // 显示固定版本信息
     kprint("HydrangeaOS v0.01", 20, 30);
     
-    int c = 500000;
+    volatile int c = 500000;  // 加 volatile 避免被优化
     while(c--) {
         kprint("LOGO!", 0, 0);
     }
-
     kprint("Done!", 0, 0);
 }
 
-void kernel_main(void) {
-    // clear_screen();
-    // print_LOGO();
-    clear_screen();
-    kprintf(0, 0, "%s", "HydrangeaOS v0.01");
+// 5. 测试函数集中放在一起
+void test_malloc(void)
+{
+    char* video = (char*)0xB8000;
     
-    // 第1步：设置关键基础设施
-    init_physical_memory();   // 内存管理
-    uint32_t addr[10];
-    // uint32_t p = alloc_pages_discrete(addr, 10);
-    // free_pages_discrete(addr, 9);
-    // uint32_t p = alloc_pages(10);
-    // free_pages(p, 3);
-    uint32_t total;
-    uint32_t free;
-    get_memory_info(&total, &free);
-    char t[32], f[32];
-    kprintf(2, 0, "%d", total);
-    kprintf(3, 0, "%d", free);
-
-    init_kernel_heap();       // 动态分配
-    int page_index = 259;
-    if (page_is_free(page_index)) {  // 检查1MB后的页...
-        kprintf(4, 0,"Page %d is free", page_index);
-    }
-    else kprintf(4, 0,"Page %d is not free", page_index);
-
-     
-    // // 第2步：设置中断系统
-    // init_idt();               // 中断描述符表
-    // init_pic();               // 中断控制器
-    // init_timer(100);          // 定时器中断
-
-    // // 第3步：设置默认中断处理程序
-    // for (int i = 0; i < 256; i++) {
-    //     set_idt_entry(i, default_interrupt_handler);
-    // }
-
-    // // 第4步：加载IDT
-    // load_idt();
-
-    // 第5步：现在才安全开中断！
-    // asm volatile("sti");
-    
-    // kprint("中断系统已启动!", 12, 35);
-    while(1){}
+    // 方法1: 使用字符串常量（可能失败）
+    kprint(0, 0, "Constant String Test Line 00Constant String Test Line 00");
+    kprint(1, 0, "Constant String Test Line 01Constant String Test Line 00");
+    kprint(2, 0, "Constant String Test Line 02Constant String Test Line 00");
+    kprint(3, 0, "Constant String Test Line 0Constant String Test Line 003");
+    kprint(4, 0, "Constant String Test Line 0Constant String Test Line 004");
+    kprint(5, 0, "Constant String Test Line 0Constant String Test Line 005");
+    kprint(6, 0, "Constant String Test Line 0Constant String Test Line 006");
+    kprint(7, 0, "Constant String Test Line 0Constant String Test Line 007");
+    kprint(8, 0, "Constant String Test Line 0Constant String Test Line 008");
+    kprint(9, 0, "Constant String Test Line 0Constant String Test Line 009");
+    kprint(10, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(11, 0, "Constant String Test Line 0Constant String Test Line 007");
+    kprint(12, 0, "Constant String Test Line 0Constant String Test Line 008");
+    kprint(13, 0, "Constant String Test Line 0Constant String Test Line 009");
+    kprint(14, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(15, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(16, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(17, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(18, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(19, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(20, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(21, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(22, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(23, 0, "Constant String Test Line 1Constant String Test Line 000");
+    kprint(24, 0, "Constant String Test Line 1Constant String Test Line 000");
 }
 
-// // kernel_main 中按顺序：
-// 1. init_physical_memory()   // 内存管理
-// 2. init_idt()              // 中断描述符表
-// 3. init_pic()              // 中断控制器
-// 4. init_timer(100)         // 定时器中断
-// 5. sti()                   // 开启中断
-// 6. 开始进程管理...
+void kernel_main(void) {
+    clear_screen();
+    
+    // 基础显示
+    kprintf(0, 0, "%s", "HydrangeaOS v0.01");
+    
+    // 内存初始化
+    init_physical_memory();
+    uint32_t total, free;
+    get_memory_info(&total, &free);
+    kprintf(2, 0, "Total: %d KB", total);
+    kprintf(3, 0, "Free: %d KB", free);
+
+    init_kernel_heap();
+    
+    // 基础检查
+    int page_index = 259;
+    if (page_is_free(page_index)) {
+        kprintf(4, 0, "Page %d is free", page_index);
+    } else {
+        kprintf(4, 0, "Page %d is used", page_index);
+    }
+    
+    // 阶段4: 运行测试（一次只运行一个）
+    test_malloc();
+    // test_compact_debug();
+    // test_compact2();
+    
+    // init_idt();
+    // init_pic();
+    // init_timer(100);
+    // asm volatile("sti");
+    
+    while(1) {}
+}

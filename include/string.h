@@ -9,7 +9,7 @@
  * 计算字符串长度
  * @param str 要计算长度的字符串
  */
-static __attribute__((always_inline)) size_t strlen(const char* str)
+inline size_t strlen(const char* str)
 {
     int len = 0;
     while(str[len] != '\0') len++;
@@ -33,26 +33,26 @@ void reverse_str(char* str);
  * @param dst 目标缓冲区
  * @param src 源字符串
  */
-static __attribute__((always_inline)) char* strcpy(char* dst, const char* src);
+char* strcpy(char* dst, const char* src);
 
 /**
  * 安全字符串复制（带长度限制）
  */
-static __attribute__((always_inline)) char* strncpy(char* dst, const char* src, size_t n);
+char* strncpy(char* dst, const char* src, size_t n);
 
 /**
  * 字符串连接
  */
-static __attribute__((always_inline)) char* strcat(char* dst, const char* src);
+char* strcat(char* dst, const char* src);
 
-static __attribute__((always_inline)) char* strncat(char* dst, const char* src, size_t n);
+char* strncat(char* dst, const char* src, size_t n);
 
 
 /**
  * 字符串比较
  */
-static __attribute__((always_inline)) int strcmp(const char* s1, const char* s2);
+int strcmp(const char* s1, const char* s2);
 
-static __attribute__((always_inline)) int strncmp(const char* s1, const char* s2, size_t n);
+int strncmp(const char* s1, const char* s2, size_t n);
 
 #endif
