@@ -39,13 +39,13 @@ void print_LOGO(void)
     for (int i = 0; i < logo_height; i++) {
         kprint(logo[i], 9 + i, 9);
     }
-    kprint("HydrangeaOS v0.01", 20, 30);
+    kprint(20, 30, "HydrangeaOS v0.01");
     
     volatile int c = 500000;  // 加 volatile 避免被优化
     while(c--) {
-        kprint("LOGO!", 0, 0);
+        kprint(0, 0, "LOGO!");
     }
-    kprint("Done!", 0, 0);
+    kprint(0, 0, "Done!");
 }
 
 // 5. 测试函数集中放在一起
