@@ -24,7 +24,14 @@
         "vector": "c",
         "algorithm": "c",
         "cstdint": "c",
-        "def.h": "c"
+        "def.h": "c",
+        "idt.h": "c",
+        "interrupts.h": "c",
+        "isr.h": "c",
+        "io.h": "c",
+        "stdint.h": "c",
+        "pci.h": "c",
+        "pic.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

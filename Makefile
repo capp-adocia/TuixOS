@@ -64,13 +64,15 @@ $(BUILD_DIR)/stage2d.elf: boot/stage2.asm
 	$(NASM) -I include/ -f elf32 -g -F dwarf -dDEBUG $< -o $@
 
 # 磁盘镜像
+KERNEL_SECTORS = $(shell expr $(shell wc -c < $(BUILD_DIR)/kernel.bin) / 512 + 1 + 5)
+
 $(BUILD_DIR)/disk.img: $(BIN_TARGETS)
-	@echo "[IMG]  制作磁盘镜像..."
+	@echo "[IMG]  内核大小: $$(wc -c < $(BUILD_DIR)/kernel.bin) 字节, 需要 $(KERNEL_SECTORS) 扇区"
+	@echo "WARNING: 若要修改 -> 还需将stage2读取扇区数也要对应修改"
 	dd if=/dev/zero of=$@ bs=512 count=2880 2>/dev/null
 	dd if=$(BUILD_DIR)/stage1.bin of=$@ conv=notrunc 2>/dev/null
 	dd if=$(BUILD_DIR)/stage2.bin of=$@ conv=notrunc bs=512 seek=1 2>/dev/null
-	dd if=$(BUILD_DIR)/kernel.bin of=$@ conv=notrunc bs=512 seek=5 2>/dev/null
-
+	dd if=$(BUILD_DIR)/kernel.bin of=$@ conv=notrunc bs=512 seek=5 count=$(KERNEL_SECTORS) 2>/dev/null
 # 运行和调试
 run: $(BUILD_DIR)/disk.img
 	@echo "[QEMU] 启动系统..."
