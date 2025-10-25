@@ -8,6 +8,8 @@
 %include "bios_calls.inc"
 
 memory_info_address equ 0x5000
+stack_top equ 0x7000
+kernel_addr equ 0x9000
 
 start:
     mov ax, cs
@@ -32,13 +34,12 @@ start:
 ;    uint32_t acpi_attrs;  // 4字节 - ACPI 属性
 ; };
 detect_memory:
-    ; ES:DI 目标缓冲区地址，DI用于结构体、数组指针
-    ; 使用 INT 0x15, AX=0xE820
     mov ax, 0x0000
     mov es, ax
-    mov di, memory_info_address ; 将内存信息保存到0x5000
+    mov di, memory_info_address 
     mov ebx, 0
-    mov dword [es:di + 20], 1 ; 设置有效的ACPI条目
+    mov dword [es:di + 20], 1
+    mov byte [memory_entry_count], 0  ; 初始化计数器
 
 .memory_loop:
     mov eax, 0xE820
@@ -50,24 +51,20 @@ detect_memory:
     cmp eax, 0x534D4150
     jne .error
 
+    ; 增加条目计数
+    inc byte [memory_entry_count]
+    
     ; 移动到下一个条目
     add di, 24
 
-    ; 检查是否完成，eax=0表示完成
     test ebx, ebx
     jnz .memory_loop
 
-    ; 成功完成
     mov si, detect_memory_success
     call print_string
 .done:
-    ; mov ax, di
-    ; sub ax, 0x5000
-    ; mov bl, 24
-    ; div bl
-    ; mov [0x4F00], al
-    ; 这里计算出条目有6个 即6*24B
     ret
+
 
 .error:
     ; 错误处理
@@ -75,25 +72,26 @@ detect_memory:
     call print_string
     ret
 
-; 加载C内核
+; 加载C内核 - 最小循环版本
 load_kernel:
-    mov ax, 0x900      ; 内核加载到 0x9000（注意这里不是写0x9000）
+    ; 第一段：柱面0, 磁头0, 扇区6-18 (13个扇区)
+    mov ax, 0x900
     mov es, ax
     xor bx, bx
-    
-    mov ah, 0x02        ; 读取扇区
-    mov al, 53          ; 读取个扇区（KB内核）
-    mov ch, 0           ; 柱面0
-    mov cl, 6           ; 从扇区6开始（stage2在2-5）
-    mov dh, 0           ; 磁头0
-    mov dl, 0           ; 驱动器0
+    mov ah, 0x02
+    mov al, 55 ; 注意56个是极限,超过就超过了0x10000即(64KB的边界)了
+    mov ch, 0
+    mov cl, 6
+    mov dh, 0
+    mov dl, 0
     int 0x13
     jc .error
+    
     mov si, kernel_load_success
     call print_string
     ret
+
 .error:
-    ; 错误处理
     mov si, kernel_load_error
     call print_string
     jmp $
@@ -196,11 +194,39 @@ protected_mode_entry:
     mov ds, ax
     mov es, ax
     mov ss, ax
-    mov esp, 0x7000 ; 栈顶
+    mov esp, stack_top ; 栈顶
     mov ebp, esp
 
-    jmp 0x9000
+    jmp kernel_addr
     jmp $
+
+; 打印十六进制
+print_hex_byte:
+    push ax
+    push bx
+    
+    mov bl, al ; 备份al的值
+    shr al, 4  ; 取出高4位
+    call .print_digit
+    mov al, bl ; 恢复原值
+    and al, 0x0F ; 取出低4位
+    call .print_digit
+    call print_newline
+
+    pop bx
+    pop ax
+    ret
+.print_digit:
+    cmp al, 10
+    jb .digit
+    add al, 'A' - 10
+    jmp .print
+.digit:
+    add al, '0'
+.print:
+    mov ah, VIDEO_TELETYPE
+    int 0x10
+    ret
 
 ; 打印字符串
 print_string:
@@ -223,6 +249,7 @@ print_newline:
     int 0x10
     ret
 
+memory_entry_count db 0
 stage2_msg db "[INFO]: Stage 2 Loader: Hello from sector 2!", 13, 10, 0
 detect_memory_success db "[INFO]: Detect memory success!", 13, 10, 0
 detect_memory_error db "[ERROR]: Detect memory error!", 13, 10, 0
@@ -231,6 +258,7 @@ kernel_load_error db "[ERROR]: Kernel load from sector 6- error!", 13, 10, 0
 a20_success_msg db "[INFO]: A20: Enabled", 13, 10, 0
 a20_failed_msg db "[ERROR]: A20 line is disabled! Cannot enter protected mode.", 13, 10, 0
 entering_pmode_msg db "[INFO]: Entering protected mode...", 13, 10, 0
+lba_success_msg db "[INFO]: lba_success_msg...", 13, 10, 0
 
 
 ; 内存布局

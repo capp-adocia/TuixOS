@@ -31,7 +31,8 @@
         "io.h": "c",
         "stdint.h": "c",
         "pci.h": "c",
-        "pic.h": "c"
+        "pic.h": "c",
+        "idt_list.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

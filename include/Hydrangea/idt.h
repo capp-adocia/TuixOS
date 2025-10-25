@@ -59,7 +59,7 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
  * @param n 编号
  * @param handler 待注册函数的指针
  */
-void inline register_interrupt_handler(uint8_t n, interrupt_handler_t handler)
+inline void register_interrupt_handler(uint8_t n, interrupt_handler_t handler)
 {
     interrupt_handlers[n] = handler;
 }

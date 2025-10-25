@@ -14,35 +14,28 @@
 /* 初始化8259A PIC */
 void init_pic(void)
 {
-    // 保存当前掩码
-    uint8_t mask1 = inb(PIC1_DATA);
-    uint8_t mask2 = inb(PIC2_DATA);
+    // 初始化序列
+    outb(PIC1_CMD, 0x11);    // ICW1: 初始化, 需要ICW4
+    outb(PIC2_CMD, 0x11);    // ICW1: 初始化, 需要ICW4
     
-    // 初始化主PIC
-    outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4);  // ICW1
-    outb(PIC1_DATA, 0x20);                   // ICW2: 中断向量偏移0x20
-    outb(PIC1_DATA, 0x04);                   // ICW3: IRQ2连接从PIC
-    outb(PIC1_DATA, 0x01);                   // ICW4: 8086模式
+    outb(PIC1_DATA, 0x20);   // ICW2: 主PIC中断向量 0x20-0x27
+    outb(PIC2_DATA, 0x28);   // ICW2: 从PIC中断向量 0x28-0x2F
     
-    // 初始化从PIC
-    outb(PIC2_CMD, ICW1_INIT | ICW1_ICW4);  // ICW1
-    outb(PIC2_DATA, 0x28);                   // ICW2: 中断向量偏移0x28
-    outb(PIC2_DATA, 0x02);                   // ICW3: 连接到主PICIRQ2
-    outb(PIC2_DATA, 0x01);                   // ICW4: 8086模式
+    outb(PIC1_DATA, 0x04);   // ICW3: 主PIC - IRQ2上有从PIC
+    outb(PIC2_DATA, 0x02);   // ICW3: 从PIC - 级联到IRQ2
     
-    // 恢复掩码（屏蔽所有中断）
-    outb(PIC1_DATA, mask1);
-    outb(PIC2_DATA, mask2);
+    outb(PIC1_DATA, 0x01);   // ICW4: 8086模式
+    outb(PIC2_DATA, 0x01);   // ICW4: 8086模式
+    
+    disable_pic();
 }
 
-/* 屏蔽PIC中断 */
 void disable_pic(void)
 {
     outb(PIC1_DATA, 0xFF);  // 屏蔽主PIC所有中断
     outb(PIC2_DATA, 0xFF);  // 屏蔽从PIC所有中断
 }
 
-/* 启用特定IRQ */
 void enable_irq(uint8_t irq)
 {
     uint16_t port;
@@ -58,7 +51,6 @@ void enable_irq(uint8_t irq)
     outb(port, value);
 }
 
-/* 禁用特定IRQ */
 void disable_irq(uint8_t irq)
 {
     uint16_t port;
@@ -74,7 +66,6 @@ void disable_irq(uint8_t irq)
     outb(port, value);
 }
 
-/* 发送EOI（中断结束）信号 */
 void send_eoi(uint8_t irq)
 {
     if (irq >= 8) {

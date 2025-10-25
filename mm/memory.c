@@ -101,6 +101,11 @@ void init_physical_memory(void)
     memset(phys_bitmap, 0xFF, sizeof(phys_bitmap));
     // 标记后512B - 32B 大小可用
     memset(&phys_bitmap[kernel_bytes], 0x00, sizeof(phys_bitmap) - kernel_bytes);
+
+    uint32_t total, free;
+    get_memory_info(&total, &free);
+    kprintf(1, 0, "---Physical Total: %d KB---", total);
+    kprintf(2, 0, "---Physical Free: %d KB---", free);
 }
 
 uint32_t alloc_page(void)
@@ -244,7 +249,7 @@ void init_kernel_heap(void)
     uint32_t heap_phys = alloc_pages(HEAP_INIT_PAGES);
     if(!heap_phys)
     {
-        kprintf(6, 0, "init_kernel_heap not alloc heap!");
+        kprintf(3, 0, "init_kernel_heap not alloc heap!");
         return;
     }
     // 初始化堆管理结构
@@ -260,7 +265,7 @@ void init_kernel_heap(void)
     first_block->size = kheap.total_size;
     first_block->used = 0; // 标记为空闲
 
-    kprintf(6, 0, "kernel_heap: 0x%x -> 0x%x (%d KB)", 
+    kprintf(3, 0, "---kernel_heap: 0x%x -> 0x%x (%d KB)---", 
        heap_phys, heap_phys + kheap.total_size, 
        kheap.total_size / 1024);
 }

@@ -56,41 +56,39 @@ void test_malloc(void)
 void init(void)
 {
     clear_screen();
-    kprintf(0, 0, "%s", "HydrangeaOS v0.01");
-    // // 内存初始化
-    // init_physical_memory();
-    // uint32_t total, free;
-    // get_memory_info(&total, &free);
-    // kprintf(2, 0, "Total: %d KB", total);
-    // kprintf(3, 0, "Free: %d KB", free);
+    kprintf(0, 25, "%s", "HydrangeaOS v0.01");
+}
 
-    // init_kernel_heap();
-
-    // // 基础检查
-    // int page_index = 259;
-    // if (page_is_free(page_index)) {
-    //     kprintf(4, 0, "Page %d is free", page_index);
-    // } else {
-    //     kprintf(4, 0, "Page %d is used", page_index);
-    // }
-    // test_malloc();
+void init_keyboard_system(void)
+{
+    // 1. 设置IDT中的键盘中断门
+    // 2. 启用键盘IRQ
+    enable_irq(1); // 启用键盘
+    // 3. 全局启用中断
+    asm volatile("sti");
+    
+    kprint(11, 0, "Keyboard system ready. Start typing...");
 }
 
 void kernel_main(void)
 {
     // 基础显示
     init();
-    __asm__ volatile("mov $0xFF, %al\nout %al, $0x21\nout %al, $0xA1");
-    init_idt();
+    // 内存初始化
+    init_physical_memory();
+    // 初始化堆,必须在内核初始化后做
+    init_kernel_heap();
+    // 初始化pic和idt表
     init_pic();
+    init_idt();
     // 开启中断
     __asm__ volatile("sti");
+    
+    init_keyboard_system();
 
-    __asm__ volatile(
-        "mov $1, %eax\n\t" // EAX = 1
-        "mov $0, %ebx\n\t" // EBX = 0
-        "div %ebx\n\t"     // EAX / EBX → 触发除零异常
-    );
+    kprint(12, 0, "System ready. Keyboard should work now.");
 
-    while(1){kprint(24, 0, "In loop");}
+    while(1){
+        asm volatile("hlt");
+    }
 }
