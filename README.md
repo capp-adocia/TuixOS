@@ -4,7 +4,7 @@
 ![start](./img/image.png)
 ![done](./img/image2.png)
 
-stage1.asm (扇区1)
+<!-- stage1.asm (扇区1)
     ↓ 收集基本硬件信息
     ↓ 加载stage2 (扇区2-5)
 stage2.asm (扇区2-5)  
@@ -14,7 +14,10 @@ stage2.asm (扇区2-5)
     ↓ 跳转到system模块
 system (内核)
     ↓ 读取0x5000 的硬件信息
-    ↓ 根据实际硬件初始化驱动
+    ↓ 根据实际硬件初始化驱动 -->
+## boot
+
+交由GRUB引导加载器来做
 
 ## 内存位置
 
