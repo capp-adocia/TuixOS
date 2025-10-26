@@ -3,8 +3,12 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x9000;          /* 内核加载地址 */
+    . = 0x10000;          /* 内核加载地址 */
     
+    .multiboot_header : {
+        *(.multiboot_header)
+    }
+
     .text : {
         *(.text)
         *(.text.*)

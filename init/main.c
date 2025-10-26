@@ -7,13 +7,11 @@
 #include <Hydrangea/idt.h>
 #include <Hydrangea/pic.h>
 
-// 1. 先声明所有函数
-void kernel_main(void);
+void kernel_main(unsigned int magic, unsigned int addr);
 void init(void);
 void print_LOGO(void);
 void test_malloc(void);
 
-// 2. 常量定义
 const char *logo[] = {
     "H   H  Y   Y  DDDD   RRRRR     A    N   N  GGGG  EEEEEE    A  ",
     "H   H   Y Y   D   D  R    R   A A   NN  N G      E        A A ",
@@ -21,16 +19,7 @@ const char *logo[] = {
     "H   H    Y    D   D  R  R   A     A N  NN G   GG E      A     A",
     "H   H    Y    DDDD   R  RRR A     A N   N  GGGG  EEEEEE A     A"};
 
-// 3. 入口点
-__attribute__((naked)) void _start(void)
-{
-    asm volatile(
-        "call kernel_main\n"
-        "hlt\n"
-        "jmp .\n");
-}
 
-// 4. 辅助函数
 void print_LOGO(void)
 {
     int logo_height = sizeof(logo) / sizeof(logo[0]);
@@ -48,7 +37,6 @@ void print_LOGO(void)
     kprint(0, 0, "Done!");
 }
 
-// 5. 测试函数集中放在一起
 void test_malloc(void)
 {
 }
@@ -70,7 +58,7 @@ void init_keyboard_system(void)
     kprint(11, 0, "Keyboard system ready. Start typing...");
 }
 
-void kernel_main(void)
+void kernel_main(unsigned int magic, unsigned int addr)
 {
     // 基础显示
     init();

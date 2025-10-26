@@ -19,6 +19,10 @@ system (内核)
 
 交由GRUB引导加载器来做
 
+1. sudo apt-get install grub2-common grub-pc-bin
+
+2. sudo apt-get install xorriso
+
 ## 内存位置
 
 - stage1入口0x7c00
