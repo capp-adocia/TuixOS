@@ -185,6 +185,8 @@ prepare_pmode:
     or eax, 1
     mov cr0, eax
     ; 选择子:偏移 注意此时已经是保护模式了
+    ; jmp gdt[0x08] + protected_mode_entry(偏移量)
+    ; 注意这里gdt[0x08]访问的是代码段里面的基址，通过获得基址再将代码偏移相加，就得到了真正的物理地址了
     jmp 0x08:protected_mode_entry
     ; 如果是实模式下应该是段:偏移->物理地址
 
@@ -270,9 +272,9 @@ lba_success_msg db "[INFO]: lba_success_msg...", 13, 10, 0
 ; 0x07FE0000-0x07FFFFFF:   128KB  保留
 ; 0xFFFC0000-0xFFFFFFFF:   256KB  保留 (BIOS ROM)
 
+; 设置gdt表：注意现在的gdt表中的代码段gdt[0x08]和数据段gdt[0x10]内容上有重叠，还无法做到内存保护 
 gdt_start:
     dq 0x0000000000000000    ; 空描述符
-    
     ; 代码段 (0x08): 4GB, 执行/读
     dw 0xFFFF                ; Limit 0:15
     dw 0x0000                ; Base 0:15
