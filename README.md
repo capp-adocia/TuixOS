@@ -1,4 +1,4 @@
-# HydrangeaOS
+# ~HydrangeaOS~（改为SilanOS以我的名字命名）
 
 ## 开发理念 
 
