@@ -32,7 +32,7 @@ void init_gdt()
     gdt.limit = sizeof(gdt_entries) - 1;
     gdt.base = (uint32_t)&gdt_entries;
     // 重载寄存器，刷新缓存
-    asm volatile(
+    __asm__ volatile(
         "lgdt %0\n"
         "ljmp $0x08, $reload_cs\n"
         "reload_cs:\n"

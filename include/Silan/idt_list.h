@@ -1,7 +1,7 @@
 /* include/Silan/idt_list.h 保存idt x宏 */
 
-#ifndef I_H_IDT_LIST_H
-#define I_H_IDT_LIST_H
+#ifndef I_S_IDT_LIST_H
+#define I_S_IDT_LIST_H
 
 /*
     使用诸如这样:
@@ -11,15 +11,58 @@
 */
 
 // 定义完整的256个IDT条目列表
+// 在头文件中定义带名称的中断映射表
 #define IDT_LIST_EXP \
-    X(0)   X(1)   X(2)   X(3)   X(4)   X(5)   X(6)   X(7)   \
-    X(8)   X(9)   X(10)  X(11)  X(12)  X(13)  X(14)  X(15)  \
-    X(16)  X(17)  X(18)  X(19)  X(20)  X(21)  X(22)  X(23)  \
-    X(24)  X(25)  X(26)  X(27)  X(28)  X(29)  X(30)  X(31)
+    X(0,   divide_error)        \
+    X(1,   debug_exception)     \
+    X(2,   nmi)                 \
+    X(3,   breakpoint)          \
+    X(4,   overflow)            \
+    X(5,   bounds_check)        \
+    X(6,   invalid_opcode)      \
+    X(7,   device_not_available) \
+    X(8,   double_fault)        \
+    X(9,   coprocessor_segment) \
+    X(10,  invalid_tss)         \
+    X(11,  segment_not_present) \
+    X(12,  stack_segment_fault) \
+    X(13,  general_protection_fault) \
+    X(14,  page_fault)          \
+    X(15,  reserved_15)         \
+    X(16,  floating_point)      \
+    X(17,  alignment_check)     \
+    X(18,  machine_check)       \
+    X(19,  simd_floating_point) \
+    X(20,  virtualization)      \
+    X(21,  control_protection)  \
+    X(22,  reserved_22)         \
+    X(23,  reserved_23)         \
+    X(24,  reserved_24)         \
+    X(25,  reserved_25)         \
+    X(26,  reserved_26)         \
+    X(27,  reserved_27)         \
+    X(28,  hypervisor_injection) \
+    X(29,  vmm_communication)   \
+    X(30,  security_exception)  \
+    X(31,  reserved_31)
 
 #define IDT_LIST_PIC \
-    X(32)  X(33)  X(34)  X(35)  X(36)  X(37)  X(38)  X(39)  \
-    X(40)  X(41)  X(42)  X(43)  X(44)  X(45)  X(46)  X(47)
+    X(32,  timer)               \
+    X(33,  keyboard)            \
+    X(34,  cascade)             \
+    X(35,  com2)                \
+    X(36,  com1)                \
+    X(37,  lpt2)                \
+    X(38,  floppy)              \
+    X(39,  lpt1)                \
+    X(40,  rtc)                 \
+    X(41,  reserved_41)         \
+    X(42,  reserved_42)         \
+    X(43,  reserved_43)         \
+    X(44,  ps2_mouse)           \
+    X(45,  fpu)                 \
+    X(46,  ata1)                \
+    X(47,  ata2)
 
 #define IDT_LIST_OTHER \
     X(48)  X(49)  X(50)  X(51)  X(52)  X(53)  X(54)  X(55)  \

@@ -8,6 +8,7 @@
 #include <Silan/idt.h>
 #include <Silan/pic.h>
 #include <Silan/serial.h>
+#include <Silan/timer.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
@@ -48,16 +49,23 @@ void init_keyboard_system(void)
 {
     // 1. 设置IDT中的键盘中断门
     // 2. 启用键盘IRQ
-    enable_irq(1); // 启用键盘
+    enable_irq(IRQ_KEYBOARD); // 启用键盘
     // 3. 全局启用中断
-    asm volatile("sti");
+    __asm__ volatile("sti");
     
-    kprint(11, 0, "Keyboard system ready. Start typing...");
+    kprint(11, 0, "Keyboard system ready...");
+}
+
+void init_timer_system(void)
+{
+    enable_irq(IRQ_TIMER);
+    __asm__ volatile("sti");
+    kprint(12, 0, "timer system ready...");
 }
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr)
 {
-    asm volatile("cli");
+    __asm__ volatile("cli");
     /* 基础显示 */
     init_show();
     /* 设置好gdt表项 */
@@ -73,13 +81,14 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     /* 初始化pic和idt表 */
     init_pic();
     init_idt();
+    /* 初始化定时器 */
+    init_timer(100);
     /* 开启中断 */
-    asm volatile("sti");
+    __asm__ volatile("sti");
     
     /* TEST */
     init_keyboard_system();
-    kprint(12, 0, "System ready. Keyboard should work now.");
+    // init_timer_system();
 
-
-    while(1) asm volatile("hlt");
+    while(1) __asm__ volatile("hlt");
 }

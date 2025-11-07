@@ -3,14 +3,6 @@
 #include <Silan/io.h>
 #include <Silan/pic.h>
 
-#define PIC1_CMD    0x20    // 主PIC命令端口
-#define PIC1_DATA   0x21    // 主PIC数据端口
-#define PIC2_CMD    0xA0    // 从PIC命令端口  
-#define PIC2_DATA   0xA1    // 从PIC数据端口
-
-#define ICW1_ICW4   0x01    // 需要ICW4
-#define ICW1_INIT   0x10    // 初始化命令
-
 /* 初始化8259A PIC */
 void init_pic(void)
 {

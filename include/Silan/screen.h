@@ -1,7 +1,7 @@
 /* include/Silan/screen.h */
 
-#ifndef I_H_SCREEN_H
-#define I_H_SCREEN_H
+#ifndef I_S_SCREEN_H
+#define I_S_SCREEN_H
 
 #include <stddef.h>
 #include <stdarg.h>

@@ -63,27 +63,31 @@ void isr_handler(struct interrupt_frame* frame)
 {    
     if(interrupt_handlers[frame->int_no])
         interrupt_handlers[frame->int_no](frame);
-    else isr_default(frame); // 默认处理
+    else isr_default_handler(frame); // 默认处理
 }
 
 static void register_interrupt_handlers(void)
 {
     // 注册前32个异常处理函数和从48-255的
-#define X(num) register_interrupt_handler(num, isr_##num##_c);
+#define X(num, name) register_interrupt_handler(num, isr_##name##_handler);
     IDT_LIST_EXP
-    // IDT_LIST_PIC 自己写新名称
-    // IDT_LIST_OTHER
+    IDT_LIST_PIC
 #undef X
-    // 额外的注册
-    register_interrupt_handler(33, isr_keyboard);
+    // 先不设置设置其余48-255
+// #define X(num) register_interrupt_handler(num, isr_##num##_handler);
+    // IDT_LIST_OTHER
+// #undef X
 }
 
 static void idt_set(void)
 {
     // 全部设置好
-#define X(num) idt_set_gate(num, (uint32_t)isr_##num, 0x08, 0x8E);
+#define X(num, name) idt_set_gate(num, (uint32_t)isr_##name##_stub, 0x08, 0x8E);
     IDT_LIST_EXP
     IDT_LIST_PIC
+#undef X
+// 设置num暂时没name
+#define X(num) idt_set_gate(num, (uint32_t)isr_##num##_stub, 0x08, 0x8E);
     IDT_LIST_OTHER
 #undef X
 }

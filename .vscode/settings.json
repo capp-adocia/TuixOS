@@ -34,7 +34,10 @@
         "pic.h": "c",
         "idt_list.h": "c",
         "gdt.h": "c",
-        "serial.h": "c"
+        "serial.h": "c",
+        "keyboard.h": "c",
+        "interrupts_types.h": "c",
+        "timer.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

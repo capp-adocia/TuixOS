@@ -1,7 +1,7 @@
 /* include/Silan/gdt.h */
 
-#ifndef I_H_GDT_H
-#define I_H_GDT_H
+#ifndef I_S_GDT_H
+#define I_S_GDT_H
 
 #include <stddef.h>
 

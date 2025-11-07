@@ -1,7 +1,7 @@
 /* include/Silan/idt.h */
 
-#ifndef I_H_IDT_H
-#define I_H_IDT_H
+#ifndef I_S_IDT_H
+#define I_S_IDT_H
 
 #include <stddef.h>
 #include <Silan/isr.h>

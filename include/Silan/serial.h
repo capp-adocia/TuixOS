@@ -1,7 +1,7 @@
 /* include/Silan/serial.h */
 
-#ifndef I_H_SERIAL_H
-#define I_H_SERIAL_H
+#ifndef I_S_SERIAL_H
+#define I_S_SERIAL_H
 
 #include <Silan/io.h>
 
@@ -17,9 +17,8 @@ void init_serial();
 void serial_putchar(char c);
 
 /**
- * 串口输出字符串
- * @param str 字符串
+ * 串口格式化输出字符串
  */
-void serial_printf(const char* str);
+void serial_printf(const char* format, ...);
 
 #endif
