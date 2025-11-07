@@ -1,7 +1,7 @@
 /* include/Hydrangea/interrupts.h 中断处理函数（软件层面） */
 
-#ifndef I_H_INTERRUPTS_SCREEN_H
-#define I_H_INTERRUPTS_SCREEN_H
+#ifndef I_H_INTERRUPTS_H
+#define I_H_INTERRUPTS_H
 
 #include <stddef.h>
 #include <Hydrangea/idt_list.h>

@@ -1,7 +1,7 @@
 /* include/Hydrangea/idt.h */
 
-#ifndef I_H_IDT_SCREEN_H
-#define I_H_IDT_SCREEN_H
+#ifndef I_H_IDT_H
+#define I_H_IDT_H
 
 #include <stddef.h>
 #include <Hydrangea/isr.h>

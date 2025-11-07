@@ -35,6 +35,7 @@ ISO_IMAGE = hydrangea-os.iso
 all: $(ISO_IMAGE)
 
 # 创建可启动ISO
+# 注意grub这里会将整个目录打包进iso文件里
 $(ISO_IMAGE): $(KERNEL_ELF)
 	grub-mkrescue -o $(ISO_IMAGE) .
 
