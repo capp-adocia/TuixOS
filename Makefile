@@ -56,12 +56,12 @@ $(KERNEL_ELF): $(ASM_OBJS) $(C_OBJS)
 # 运行和调试
 run: $(ISO_IMAGE)
 	@echo "[QEMU] 启动系统..."
-	qemu-system-x86_64 -cdrom $(ISO_IMAGE) -serial stdio
+	qemu-system-x86_64 -m 128M -cdrom $(ISO_IMAGE) -serial stdio
 
 # 串口调试
 debug: $(ISO_IMAGE)
 	@echo "[QEMU] 启动串口调试..."
-	qemu-system-x86_64 -cdrom $(ISO_IMAGE) -serial stdio -s -S -display none
+	qemu-system-x86_64 -m 128M -cdrom $(ISO_IMAGE) -serial stdio -s -S -display none
 
 # 清理
 clean:

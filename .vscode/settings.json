@@ -37,7 +37,9 @@
         "serial.h": "c",
         "keyboard.h": "c",
         "interrupts_types.h": "c",
-        "timer.h": "c"
+        "timer.h": "c",
+        "page.h": "c",
+        "mulitiboot2.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

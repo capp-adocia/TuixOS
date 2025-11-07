@@ -9,6 +9,9 @@
 #include <Silan/pic.h>
 #include <Silan/serial.h>
 #include <Silan/timer.h>
+#include <Silan/page.h>
+#include <Silan/serial.h>
+#include <Silan/mulitiboot2.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
@@ -66,14 +69,15 @@ void init_timer_system(void)
 void kernel_main(uint32_t magic, uint32_t mbi_addr)
 {
     __asm__ volatile("cli");
-    /* 基础显示 */
-    init_show();
-    /* 设置好gdt表项 */
-    init_gdt();
     /* 初始化串口 */
     init_serial();
     serial_printf("=== Silan OS 启动 ===\r\n");
-
+    /* 基础显示 */
+    init_show();
+    /* 解析mbi_addr */
+    parse_multiboot2_info(magic, mbi_addr);
+    /* 设置好gdt表项 */
+    init_gdt();
     /* 内存初始化 */
     init_physical_memory();
     /* 初始化堆，必须在内核初始化后做 */
@@ -83,6 +87,8 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_idt();
     /* 初始化定时器 */
     init_timer(100);
+    /* 启用分页 */
+    init_page();
     /* 开启中断 */
     __asm__ volatile("sti");
     

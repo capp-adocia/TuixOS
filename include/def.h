@@ -4,5 +4,6 @@
 #define I_DEF_H
 
 #define DEBUG
+// #define MEM_INFO // 内存信息
 
 #endif

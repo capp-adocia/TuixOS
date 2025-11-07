@@ -4,9 +4,12 @@
 #define I_S_MEMORY_H
 
 #include <stddef.h>
-#define TOTAL_MEMORY 16 * 1024 * 1024
+#include <Silan/mulitiboot2.h>
+
+#define TOTAL_MEMORY 128 * 1024 * 1024
 #define PAGE_SIZE 4096
-#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE) // 4096页
+#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE) // 32768页
+
 #define HEAP_INIT_PAGES 4 // 堆初始分配4页
 #define HEAP_ALIGN 8  // 8字节对齐
 #define MIN_BLOCK_SIZE (sizeof(struct heap_block) + HEAP_ALIGN) // 最小分配大小
@@ -14,7 +17,8 @@
 #define HEAP_HEAD_PTR(ptr) ((struct heap_block*)(ptr)) // 强制转换为堆头指针类型
 
 // 物理页位图数组
-extern uint8_t phys_bitmap[TOTAL_PAGES / 8]; // 分配512字节 管理4096个物理页
+extern uint8_t phys_bitmap[32768 / 8];
+
 // 堆块头
 struct heap_block
 {
@@ -127,7 +131,7 @@ void get_memory_info(uint32_t* total, uint32_t* free);
  * @param page_index 页索引
  * @return 是否可用
  */
-bool page_is_free(uint32_t page_index);
+bool is_page_free(uint32_t page_index);
 
 /**
  * 标记页为已用（占用）

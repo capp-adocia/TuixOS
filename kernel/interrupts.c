@@ -28,6 +28,7 @@ void isr_divide_error_handler(struct interrupt_frame* frame)
 {
     kprintf(12, 0, "Divide Error at EIP: %x - Fixed", frame->eip);
     frame->eax = 0;  // 设置结果为0，继续执行
+    frame->eip += 2;
 }
 
 // 1: 调试异常 - 可恢复，用于调试器
