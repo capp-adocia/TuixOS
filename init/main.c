@@ -1,15 +1,16 @@
 /* init/main.c 实现C内核 */
-#include <Hydrangea/screen.h>
-#include <Hydrangea/memory.h>
+#include <Silan/screen.h>
+#include <Silan/memory.h>
 #include <string.h>
 #include <stddef.h>
 #include <def.h>
-#include <Hydrangea/gdt.h>
-#include <Hydrangea/idt.h>
-#include <Hydrangea/pic.h>
+#include <Silan/gdt.h>
+#include <Silan/idt.h>
+#include <Silan/pic.h>
+#include <Silan/serial.h>
 
-void kernel_main(unsigned int magic, unsigned int addr);
-void init(void);
+void kernel_main(uint32_t magic, uint32_t mbi_addr);
+void init_show(void);
 void print_LOGO(void);
 
 const char *logo[] = {
@@ -18,7 +19,6 @@ const char *logo[] = {
     " SSSSS    II    LL  AAAAA   NN N NN ",
     "    SS    II    LL AA   AA  NN  NNN ",
     "SSSSSS  IIIIII  LL AA   AA  NN   NN "};
-
 
 void print_LOGO(void)
 {
@@ -37,7 +37,7 @@ void print_LOGO(void)
     kprint(0, 0, "Done!");
 }
 
-void init(void)
+void init_show(void)
 {
     clear_screen();
     // print_LOGO();
@@ -58,18 +58,22 @@ void init_keyboard_system(void)
 void kernel_main(uint32_t magic, uint32_t mbi_addr)
 {
     asm volatile("cli");
-    // 基础显示
-    init();
-    // 设置好gdt表项
+    /* 基础显示 */
+    init_show();
+    /* 设置好gdt表项 */
     init_gdt();
-    // 内存初始化
+    /* 初始化串口 */
+    init_serial();
+    serial_printf("=== Silan OS 启动 ===\r\n");
+
+    /* 内存初始化 */
     init_physical_memory();
-    // 初始化堆,必须在内核初始化后做
+    /* 初始化堆，必须在内核初始化后做 */
     init_kernel_heap();
-    // 初始化pic和idt表
+    /* 初始化pic和idt表 */
     init_pic();
     init_idt();
-    // 开启中断
+    /* 开启中断 */
     asm volatile("sti");
     
     /* TEST */

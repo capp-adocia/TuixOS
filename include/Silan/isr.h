@@ -1,8 +1,8 @@
-/* include/Hydrangea/isr.h 中断入口桩（硬件层面） */
+/* include/Silan/isr.h 中断入口桩（硬件层面） */
 
 #ifndef I_H_ISR_H
 #define I_H_ISR_H
-#include <Hydrangea/idt_list.h>
+#include <Silan/idt_list.h>
 
 #define ISR_DECLARE(num) 
 

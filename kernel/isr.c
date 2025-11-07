@@ -1,6 +1,6 @@
 /* kernel/isr.c */
 
-#include <Hydrangea/isr.h>
+#include <Silan/isr.h>
 
 #define ISR_NOERRCODE(num) \
 void isr_##num(void) { \

@@ -1,7 +1,7 @@
 /* driver/pic.c - 8259A PIC初始化 */
 
-#include <Hydrangea/io.h>
-#include <Hydrangea/pic.h>
+#include <Silan/io.h>
+#include <Silan/pic.h>
 
 #define PIC1_CMD    0x20    // 主PIC命令端口
 #define PIC1_DATA   0x21    // 主PIC数据端口

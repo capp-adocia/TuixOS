@@ -1,6 +1,6 @@
 /* kernel/gdt.c */
 
-#include <Hydrangea/gdt.h>
+#include <Silan/gdt.h>
 
 struct gdt_entry gdt_entries[3];
 

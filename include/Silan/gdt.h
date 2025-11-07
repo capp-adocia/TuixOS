@@ -1,7 +1,7 @@
-/* include/Hydrangea/gdt.h */
+/* include/Silan/gdt.h */
 
-#ifndef I_H_gdt_H
-#define I_H_gdt_H
+#ifndef I_H_GDT_H
+#define I_H_GDT_H
 
 #include <stddef.h>
 

@@ -3,8 +3,8 @@
 #ifndef MM_MEMORY_H
 #define MM_MEMORY_H
 
-#include <Hydrangea/memory.h>
-#include <Hydrangea/screen.h>
+#include <Silan/memory.h>
+#include <Silan/screen.h>
 #include <string.h>
 #include <errno.h>
 #include <def.h>

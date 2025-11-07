@@ -1,4 +1,4 @@
-/* include/Hydrangea/screen.h */
+/* include/Silan/screen.h */
 
 #ifndef I_H_SCREEN_H
 #define I_H_SCREEN_H

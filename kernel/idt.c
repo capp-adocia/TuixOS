@@ -1,7 +1,7 @@
 /* kernel/idt.c */
 
-#include <Hydrangea/idt.h>
-#include <Hydrangea/idt_list.h>
+#include <Silan/idt.h>
+#include <Silan/idt_list.h>
 
 struct idt_entry idt[IDT_ITEM_NUM];
 interrupt_handler_t interrupt_handlers[IDT_ITEM_NUM];

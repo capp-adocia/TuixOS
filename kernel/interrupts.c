@@ -1,8 +1,8 @@
 /* kernel/interrupts.c */
 
-#include <Hydrangea/interrupts.h>
-#include <Hydrangea/screen.h>
-#include <Hydrangea/io.h>
+#include <Silan/interrupts.h>
+#include <Silan/screen.h>
+#include <Silan/io.h>
 #include <stddef.h>
 
 void isr_default(struct interrupt_frame* frame)

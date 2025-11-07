@@ -1,11 +1,11 @@
-/* include/Hydrangea/idt.h */
+/* include/Silan/idt.h */
 
 #ifndef I_H_IDT_H
 #define I_H_IDT_H
 
 #include <stddef.h>
-#include <Hydrangea/isr.h>
-#include <Hydrangea/interrupts.h>
+#include <Silan/isr.h>
+#include <Silan/interrupts.h>
 
 /* 中断数量 */
 #define IDT_ITEM_NUM 256

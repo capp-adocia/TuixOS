@@ -1,6 +1,6 @@
 /* driver/screen.c */
 
-#include <Hydrangea/screen.h>
+#include <Silan/screen.h>
 
 void put_char(const char c, int row, int col)
 {

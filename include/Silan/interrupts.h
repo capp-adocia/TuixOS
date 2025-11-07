@@ -1,10 +1,10 @@
-/* include/Hydrangea/interrupts.h 中断处理函数（软件层面） */
+/* include/Silan/interrupts.h 中断处理函数（软件层面） */
 
 #ifndef I_H_INTERRUPTS_H
 #define I_H_INTERRUPTS_H
 
 #include <stddef.h>
-#include <Hydrangea/idt_list.h>
+#include <Silan/idt_list.h>
 
 struct interrupt_frame
 {

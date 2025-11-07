@@ -33,7 +33,8 @@
         "pci.h": "c",
         "pic.h": "c",
         "idt_list.h": "c",
-        "gdt.h": "c"
+        "gdt.h": "c",
+        "serial.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

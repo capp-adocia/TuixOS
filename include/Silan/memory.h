@@ -1,4 +1,4 @@
-/* include/Hydrangea/memory.h */
+/* include/Silan/memory.h */
 
 #ifndef I_H_MEMORY_H
 #define I_H_MEMORY_H

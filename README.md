@@ -1,4 +1,4 @@
-# HydrangeaOS
+# SilanOS
 
 `绣球操作系统`
 ![start](./img/image.png)

@@ -27,8 +27,8 @@ C_OBJS = $(C_SRCS:%.c=$(BUILD_DIR)/%.o)
 ASM_OBJS = $(BUILD_DIR)/boot/kernel_entry.o
 
 # 目标
-KERNEL_ELF = $(BUILD_DIR)/hydrangea.kernel
-ISO_IMAGE = hydrangea-os.iso
+KERNEL_ELF = $(BUILD_DIR)/Silan.kernel
+ISO_IMAGE = Silan-os.iso
 
 .PHONY: all clean run help
 
@@ -56,7 +56,12 @@ $(KERNEL_ELF): $(ASM_OBJS) $(C_OBJS)
 # 运行和调试
 run: $(ISO_IMAGE)
 	@echo "[QEMU] 启动系统..."
-	qemu-system-x86_64 -cdrom $(ISO_IMAGE)
+	qemu-system-x86_64 -cdrom $(ISO_IMAGE) -serial stdio
+
+# 串口调试
+debug: $(ISO_IMAGE)
+	@echo "[QEMU] 启动串口调试..."
+	qemu-system-x86_64 -cdrom $(ISO_IMAGE) -serial stdio -s -S -display none
 
 # 清理
 clean:
@@ -66,4 +71,5 @@ help:
 	@echo "构建目标:"
 	@echo "  all     - 构建完整系统"
 	@echo "  run     - 构建并运行"
+	@echo "  debug   - 构建并调试"
 	@echo "  clean   - 清理所有生成文件"

@@ -1,4 +1,4 @@
-/* include/Hydrangea/idt_list.h 保存idt x宏 */
+/* include/Silan/idt_list.h 保存idt x宏 */
 
 #ifndef I_H_IDT_LIST_H
 #define I_H_IDT_LIST_H
