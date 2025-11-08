@@ -18,6 +18,8 @@
 #define MIN_BLOCK_SIZE (sizeof(struct heap_block) + HEAP_ALIGN) // 最小分配大小
 #define HEAP_HEAD_SIZE (sizeof(struct heap_block)) // 堆头部大小
 #define HEAP_HEAD_PTR(ptr) ((struct heap_block*)(ptr)) // 强制转换为堆头指针类型
+/* 将来使用内核映射基址 */
+#define KERNEL_VIRTUAL_BASE 0xC0000000
 
 // 物理页位图数组
 extern uint8_t phys_bitmap[BITMAP_SIZE];

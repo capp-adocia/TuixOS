@@ -6,14 +6,24 @@
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 
-void init_page()
+void init_page(void)
 {
     // 创建页表
-    for (uint32_t i = 0; i < PDE_NUM; i++) create_page_table(i);
-
+    for (uint32_t pd_index = 0; pd_index < PDE_NUM; pd_index++)
+    {
+        uint32_t* new_pt = create_page_table(pd_index);
+        // 建立恒等映射
+        for (int pt_index = 0; pt_index < PTE_NUM; pt_index++)
+        {
+            uint32_t physical_addr = ((pd_index << 10) + pt_index) * PT_SIZE;
+            // 设置所有页为只读
+            new_pt[pt_index] = physical_addr | PRESENT_BIT;
+        }
+    }
+    
     // 设置内核页保护
-    // setup_kernel_page_protection();
-
+    setup_kernel_page_protection();
+    
     // 设置CR3寄存器指向页目录
     enable_paging();
 }
@@ -27,16 +37,7 @@ uint32_t* create_page_table(uint32_t pd_index)
         serial_printf("创建页表失败: pd_index=%d, error=%d\n", pd_index, error_code);
         return NULL;
     }
-    
-    // 建立恒等映射
-    for (int i = 0; i < 1024; i++)
-    {
-        uint32_t physical_addr = (pd_index * 1024 + i) * PAGE_SIZE;
-        new_pt[i] = physical_addr | PRESENT_BIT | READ_WRITE_BIT;
-    }
-    
-    page_directory[pd_index] = (uint32_t)new_pt | PRESENT_BIT | READ_WRITE_BIT;
-    
+    page_directory[pd_index] = (uint32_t)new_pt | PRESENT_BIT;
     return new_pt;
 }
 
@@ -70,25 +71,22 @@ uint32_t calculate_page_count(uint32_t start_addr, uint32_t end_addr)
     return end_page - start_page;
 }
 
-void setup_kernel_page_protection()
+void setup_kernel_page_protection(void)
 {
-    // 需要通过页目录访问第一个页表来设置保护
     uint32_t* first_pt = get_page_table(0x0);
-    // 设置.text段为只读+可执行
-    for (uint32_t i = mem_info.ktext_start_addr; i < mem_info.ktext_end_addr; i++)
-        first_pt[i] = (i << 12) | PRESENT_BIT;
-    // 设置.rodata段为只读
-    for (uint32_t i = mem_info.krodata_addr; i < mem_info.krodata_end_addr; i++)
-        first_pt[i] = (i << 12) | PRESENT_BIT;
-    // 设置.data段为可读写
-    for (uint32_t i = mem_info.kdata_start_addr; i < mem_info.kdata_end_addr; i++)
-        first_pt[i] = (i << 12) | PRESENT_BIT | READ_WRITE_BIT;
-    // 设置.bss段为可读写
-    for (uint32_t i = mem_info.kbss_start_addr; i < mem_info.kbss_end_addr; i++)
-        first_pt[i] = (i << 12) | PRESENT_BIT | READ_WRITE_BIT;
+    
+    // 只有.data和.bss段设置为可读写
+    for (uint32_t page_index = get_pt_index(mem_info.kdata_start_addr);
+         page_index < (mem_info.kdata_end_addr + 0xFFF) >> 12; page_index++)
+        first_pt[page_index] |= READ_WRITE_BIT;
+
+    for (uint32_t page_index = get_pt_index(mem_info.kbss_start_addr);
+         page_index < (mem_info.kbss_end_addr + 0xFFF) >> 12; page_index++)
+        first_pt[page_index] |= READ_WRITE_BIT;
+
 }
 
-void enable_paging()
+void enable_paging(void)
 {
     uint32_t pd_physical = (uint32_t)page_directory;
     // 将CR3指向页目录物理地址
@@ -100,4 +98,64 @@ void enable_paging()
         "mov %%eax, %%cr0"
         : : : "eax"
     );
+    
+    // unmap_page(0xDEADB000);
+    
+    // // 现在访问会触发页错误
+    // volatile uint32_t* fault_addr = (volatile uint32_t*)0xDEADB000;
+    // uint32_t value = *fault_addr;
+    // serial_printf("如果看到这行，说明页错误被正确处理了\n");
+
+    // uint32_t mapped_pages = 0;
+    // uint32_t max_mapped_addr = 0;
+    
+    // for (uint32_t i = 0; i < 1024; i++) {
+    //     if (page_directory[i] & PRESENT_BIT)
+    //     {
+    //         // 这个页目录项有效，映射了4MB区域
+    //         uint32_t region_start = i * 4 * 1024 * 1024;  // 每个PDE映射4MB
+    //         uint32_t region_end = region_start + 4 * 1024 * 1024 - 1;
+            
+    //         serial_printf("PDE[%d]: 映射 0x%x - 0x%x\n", i, region_start, region_end);
+            
+    //         mapped_pages += 1024;  // 每个页表有1024个页面
+    //         max_mapped_addr = region_end;
+    //     }
+    // }
+    
+    // serial_printf("总计: %d 页 (%d MB)\n", mapped_pages, mapped_pages * 4 / 1024);
+    // serial_printf("最大映射地址: 0x%x\n", max_mapped_addr);
+}
+
+void unmap_page(uint32_t virtual_addr)
+{
+    uint32_t pd_index = get_pd_index(virtual_addr);
+    uint32_t pt_index = get_pt_index(virtual_addr);
+    uint32_t* pt = get_page_table(virtual_addr);
+    
+    if (pt)
+    {
+        pt[pt_index] = 0;  // 清除存在位
+        serial_printf("已取消映射 %x\n", virtual_addr);
+    }
+}
+
+void check_mapping(uint32_t virtual_addr)
+{
+    uint32_t pd_index = get_pd_index(virtual_addr);
+    uint32_t pt_index = get_pt_index(virtual_addr);
+    
+    serial_printf("检查地址 %x:\n", virtual_addr);
+    serial_printf("  页目录索引: %x\n", pd_index);
+    serial_printf("  页表索引: %x\n", pt_index);
+    
+    uint32_t* pt = get_page_table(virtual_addr);
+    if (pt)
+    {
+        uint32_t pte = pt[pt_index];
+        serial_printf("  页表项: %x\n", pte);
+        serial_printf("  映射到物理地址: %x\n", pte & 0xFFFFF000);
+        serial_printf("  存在位: %s\n", (pte & PRESENT_BIT) ? "是" : "否");
+    } 
+    else serial_printf("  页表不存在\n");
 }

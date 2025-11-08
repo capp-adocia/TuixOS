@@ -8,7 +8,7 @@
 /**
  * 初始化串口
  */
-void init_serial();
+void init_serial(void);
 
 /**
  * 串口输出字符

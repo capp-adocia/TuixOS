@@ -6,7 +6,7 @@
 static void serial_print_int(int num, int base);
 static void serial_print_hex(unsigned int num);
 
-void init_serial()
+void init_serial(void)
 {
     outb(0x3F8 + 1, 0x00);    // 禁用所有中断
     outb(0x3F8 + 3, 0x80);    // 启用DLAB（设置波特率）

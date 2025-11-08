@@ -6,11 +6,12 @@
 #include <stddef.h>
 #include <Silan/keyboard.h>
 #include <Silan/timer.h>
+#include <Silan/serial.h>
 
 void isr_default_handler(struct interrupt_frame* frame)
 {
     if(frame->int_no < 32){
-        kprint(15, 0, "Ex:");
+        kprint(15, 0, "Ex:\n");
         
         char num_str[3];
         num_str[0] = '0' + (frame->int_no / 10);
@@ -26,7 +27,7 @@ void isr_default_handler(struct interrupt_frame* frame)
 // 0: 除零错误 - 可恢复，设置默认结果
 void isr_divide_error_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Divide Error at EIP: %x - Fixed", frame->eip);
+    serial_printf("Divide Error at EIP: %x - Fixed\n", frame->eip);
     frame->eax = 0;  // 设置结果为0，继续执行
     frame->eip += 2;
 }
@@ -34,81 +35,81 @@ void isr_divide_error_handler(struct interrupt_frame* frame)
 // 1: 调试异常 - 可恢复，用于调试器
 void isr_debug_exception_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Debug Exception at EIP: %x - Continue", frame->eip);
+    serial_printf("Debug Exception at EIP: %x - Continue\n", frame->eip);
     // 单步执行，继续
 }
 
 // 2: 非屏蔽中断 - 严重硬件错误
 void isr_nmi_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "NMI Interrupt - Hardware Failure");
-    kprintf(13, 0, "System Halted");
-    __asm__ volatile("cli; hlt");  // 停机
+    serial_printf("NMI Interrupt - Hardware Failure\n");
+    serial_printf("System Halted\n");
+    while(1) __asm__ volatile("cli; hlt");  // 停机
 }
 
 // 3: 断点 - 可恢复，用于调试
 void isr_breakpoint_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Breakpoint at EIP: %x - Continue", frame->eip);
+    serial_printf("Breakpoint at EIP: %x - Continue\n", frame->eip);
     // 调试断点，继续执行
 }
 
 // 4: 溢出 - 可恢复，清除标志
 void isr_overflow_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Overflow at EIP: %x - Cleared", frame->eip);
+    serial_printf("Overflow at EIP: %x - Cleared\n", frame->eip);
     // 溢出标志会被自动处理，继续执行
 }
 
 // 5: 边界检查 - 可恢复，修复索引
 void isr_bounds_check_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Bounds Check at EIP: %x - Fixed", frame->eip);
+    serial_printf("Bounds Check at EIP: %x - Fixed\n", frame->eip);
     // 可以修复边界索引，继续执行
 }
 
 // 6: 无效操作码 - 严重，无法恢复
 void isr_invalid_opcode_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Invalid Opcode at EIP: %x", frame->eip);
-    kprintf(13, 0, "Unrecoverable - System Halted");
-    __asm__ volatile("cli; hlt");
+    serial_printf("Invalid Opcode at EIP: %x\n", frame->eip);
+    serial_printf("Unrecoverable - System Halted\n");
+    while(1) __asm__ volatile("cli; hlt");
 }
 
 // 7: 设备不可用 - 可恢复，模拟或禁用
 void isr_device_not_available_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Device Not Available at EIP: %x", frame->eip);
-    __asm__ volatile("mov %cr0, %eax; and $0xFFFFFFFB, %eax; mov %eax, %cr0");
+    serial_printf("Device Not Available at EIP: %x\n", frame->eip);
+    __asm__ volatile("mov %cr0, %eax; and $0xFFFFFFFB, %eax; mov %eax, %cr0\n");
 }
 
 // 8: 双重故障 - 严重系统错误
 void isr_double_fault_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Double Fault! Error: %x", frame->err_code);
-    kprintf(13, 0, "EIP: %x, System Halted", frame->eip);
-    __asm__ volatile("cli; hlt");
+    serial_printf("Double Fault! Error: %x\n", frame->err_code);
+    serial_printf("EIP: %x, System Halted\n", frame->eip);
+    while(1) __asm__ volatile("cli; hlt");
 }
 
 // 9: 协处理器段越界
 void isr_coprocessor_segment_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Coprocessor Segment Overrun - Fixed");
+    serial_printf("Coprocessor Segment Overrun - Fixed\n");
     // 继续执行
 }
 
 // 10: 无效TSS - 系统配置错误
 void isr_invalid_tss_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Invalid TSS. Error: %x", frame->err_code);
-    kprintf(13, 0, "Kernel Panic - System Halted");
-    __asm__ volatile("cli; hlt");
+    serial_printf("Invalid TSS. Error: %x\n", frame->err_code);
+    serial_printf("Kernel Panic - System Halted\n");
+    while(1) __asm__ volatile("cli; hlt");
 }
 
 // 11: 段不存在, 重新加载段
 void isr_segment_not_present_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Segment Not Present. Error: %x", frame->err_code);
+    serial_printf("Segment Not Present. Error: %x\n", frame->err_code);
     // 可以重新加载段寄存器或修复GDT
     // 这里简单继续,在实际OS中需要更复杂处理
 }
@@ -116,17 +117,17 @@ void isr_segment_not_present_handler(struct interrupt_frame* frame)
 // 12: 栈段错误 - 严重内存错误
 void isr_stack_segment_fault_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Stack Segment Fault. Error: %x", frame->err_code);
-    kprintf(13, 0, "Stack Corrupted - System Halted");
-    __asm__ volatile("cli; hlt");
+    serial_printf("Stack Segment Fault. Error: %x\n", frame->err_code);
+    serial_printf("Stack Corrupted - System Halted\n");
+    while(1) __asm__ volatile("cli; hlt");
 }
 
 // 13: 通用保护错误 - 严重内存/权限错误
 void isr_general_protection_fault_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "General Protection Fault! Error: %x", frame->err_code);
-    kprintf(13, 0, "EIP: %x, CS: %x - System Halted", frame->eip, frame->cs);
-    __asm__ volatile("cli; hlt");
+    serial_printf("General Protection Fault! Error: %x\n", frame->err_code);
+    serial_printf("EIP: %x, CS: %x - System Halted\n", frame->eip, frame->cs);
+    while(1) __asm__ volatile("cli; hlt");
 }
 
 // 14: 页错误 - 可恢复，处理缺页
@@ -134,41 +135,43 @@ void isr_page_fault_handler(struct interrupt_frame* frame)
 {
     uint32_t fault_addr;
     __asm__ volatile("mov %%cr2, %0" : "=r"(fault_addr));
-    kprintf(12, 0, "Page Fault @ %x", fault_addr);
-    kprintf(13, 0, "Error: %x - Handling", frame->err_code);
+    serial_printf("Error Code: %x\n", frame->err_code);
+    if(frame->err_code & 0x1)
+        serial_printf("Page Fault: 页面不存在 %x\n", fault_addr);
+    else
+        serial_printf("Page Fault: 权限错误 %x - Halting\n", fault_addr);
     
-    // 在实际OS中这里会分配物理页、更新页表等
-    // 这里简单标记，继续执行
+    while(1) __asm__ volatile("cli; hlt");
 }
 
-// 15: 保留 - 不应该发生
+// 15: 保留
 void isr_reserved_15_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 15 - Ignored");
+    serial_printf("Reserved Exception 15 - Ignored\n");
     // 继续执行
 }
 
 // 16: 浮点错误 - 可恢复，清除状态
 void isr_floating_point_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Floating Point Exception - Cleared");
+    serial_printf("Floating Point Exception - Cleared\n");
     // 清除FPU状态字，继续执行
-    __asm__ volatile("fnclex");
+    __asm__ volatile("fnclex\n");
 }
 
 // 17: 对齐检查 - 可修复
 void isr_alignment_check_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Alignment Check. Error: %x - Fixed", frame->err_code);
+    serial_printf("Alignment Check. Error: %x - Fixed\n", frame->err_code);
     // 可以修复对齐，继续执行
 }
 
 // 18: 机器检查 - 严重硬件错误
 void isr_machine_check_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Machine Check - Hardware Failure");
-    kprintf(13, 0, "Critical Error - System Halted");
-    __asm__ volatile("cli; hlt");
+    serial_printf("Machine Check - Hardware Failure\n");
+    serial_printf("Critical Error - System Halted\n");
+    while(1) __asm__ volatile("cli; hlt");
 }
 
 // 19-31: 保留和特定平台异常
@@ -176,7 +179,7 @@ void isr_machine_check_handler(struct interrupt_frame* frame)
 // 19: SIMD浮点异常
 void isr_simd_floating_point_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "SIMD Floating Point Exception - Cleared");
+    serial_printf("SIMD Floating Point Exception - Cleared\n");
     
     uint32_t mxcsr_value = 0x1F80;  // 默认MXCSR值
     __asm__ volatile("ldmxcsr %0" : : "m"(mxcsr_value));
@@ -185,79 +188,79 @@ void isr_simd_floating_point_handler(struct interrupt_frame* frame)
 // 20: 虚拟化异常
 void isr_virtualization_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Virtualization Exception - Ignored");
+    serial_printf("Virtualization Exception - Ignored\n");
     // 虚拟化相关异常，在没有虚拟化支持时忽略
 }
 
 // 21: 控制保护异常
 void isr_control_protection_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Control Protection Exception. Error: %x", frame->err_code);
+    serial_printf("Control Protection Exception. Error: %x\n", frame->err_code);
     // CET（控制流执行技术）相关，可以修复或终止进程
 }
 
 // 22: 保留
 void isr_reserved_22_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 22 - Ignored");
+    serial_printf("Reserved Exception 22 - Ignored\n");
 }
 
 // 23: 保留
 void isr_reserved_23_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 23 - Ignored");
+    serial_printf("Reserved Exception 23 - Ignored\n");
 }
 
 // 24: 保留
 void isr_reserved_24_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 24 - Ignored");
+    serial_printf("Reserved Exception 24 - Ignored\n");
 }
 
 // 25: 保留
 void isr_reserved_25_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 25 - Ignored");
+    serial_printf("Reserved Exception 25 - Ignored\n");
 }
 
 // 26: 保留
 void isr_reserved_26_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 26 - Ignored");
+    serial_printf("Reserved Exception 26 - Ignored\n");
 }
 
 // 27: 保留
 void isr_reserved_27_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 27 - Ignored");
+    serial_printf("Reserved Exception 27 - Ignored\n");
 }
 
 // 28: Hypervisor注入异常
 void isr_hypervisor_injection_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Hypervisor Injection Exception - Ignored");
+    serial_printf("Hypervisor Injection Exception - Ignored\n");
     // 虚拟化相关，在没有hypervisor时忽略
 }
 
 // 29: VMM通信异常
 void isr_vmm_communication_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "VMM Communication Exception - Ignored");
+    serial_printf("VMM Communication Exception - Ignored\n");
     // 虚拟化管理程序通信异常
 }
 
 // 30: 安全异常
 void isr_security_exception_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Security Exception. Error: %x", frame->err_code);
-    kprintf(13, 0, "Security violation detected");
+    serial_printf("Security Exception. Error: %x\n", frame->err_code);
+    serial_printf("Security violation detected\n");
     // 安全相关异常，如SGX等，需要谨慎处理
 }
 
 // 31: 保留
 void isr_reserved_31_handler(struct interrupt_frame* frame)
 {
-    kprintf(12, 0, "Reserved Exception 31 - Ignored");
+    serial_printf("Reserved Exception 31 - Ignored\n");
 }
 
 // 32: 定时器中断

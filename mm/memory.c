@@ -268,12 +268,19 @@ void mark_page_free(uint32_t page_index)
     phys_bitmap[page_byte] &= ~(1 << page_offset); // 按位与
 }
 
+static inline uint32_t* phys_to_virt(uint32_t* phys)
+{
+    return phys; // 现在直接返回，将来要改
+}
+
 // 根据物理页分配情况初始化
 void init_kernel_heap(void)
 {
     // 从物理内存分配连续的堆空间
     int error_code;
     uint32_t* heap_phys = alloc_pages(HEAP_INIT_PAGES, &error_code);
+    // TODO: 将来换成恒等映射后要改
+    uint32_t* heap_virt = phys_to_virt(heap_phys);
     if(error_code < 0)
     {
         kprintf(3, 0, "init_kernel_heap not alloc heap!");
