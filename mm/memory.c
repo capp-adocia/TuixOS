@@ -8,8 +8,9 @@
 #include <string.h>
 #include <errno.h>
 #include <def.h>
+#include <Silan/mulitiboot2.h>
 
-uint8_t phys_bitmap[32768 / 8]; // 4096字节
+uint8_t phys_bitmap[BITMAP_SIZE]; // 131072字节
 struct kernel_heap kheap;
 
 void* memset(void* dst, int val, size_t count)
@@ -90,89 +91,29 @@ int memcmp(const void* ptr1, const void* ptr2, size_t count)
 
 void init_physical_memory(void)
 {
-    // 找出最大物理地址
-    uint32_t max_physical_addr = 0;
-    
+    // 将位图的整个区域标记为已用
+    memset(phys_bitmap, 0xFF, sizeof(phys_bitmap));
+    // 找出各个条目是否可用
+    uint32_t region_start_addr, region_end_addr, region_start_page, region_end_page;
     for (uint32_t i = 0; i < mem_info.memory_map_count; i++)
     {
-        uint32_t region_end = (uint32_t)(mem_info.memory_map[i].addr + mem_info.memory_map[i].len);
-        if (region_end > max_physical_addr)
-        {
-            max_physical_addr = region_end;
-        }
-    }
-    // 计算覆盖0到max_physical_addr的位图大小
-    uint32_t total_pages = (max_physical_addr + PAGE_SIZE - 1) / PAGE_SIZE;
-    uint32_t bitmap_size = total_pages / 8;
-    serial_printf("位图覆盖: 0x0 - %x\n", max_physical_addr);
-    serial_printf("总页数: %d, 位图大小: %d 字节\n", total_pages, bitmap_size);
-
-    // 初始化位图全为1
-    memset(phys_bitmap, 0xFF, bitmap_size);
-
-    // 根据内存映射标记各个区域
-    for (uint32_t i = 0; i < mem_info.memory_map_count; i++)
-    {
-        uint32_t start_page = (uint32_t)mem_info.memory_map[i].addr / PAGE_SIZE;
-        uint32_t end_page = ((uint32_t)mem_info.memory_map[i].addr +
-                            (uint32_t)mem_info.memory_map[i].len) / PAGE_SIZE;
+        region_start_addr = (uint32_t)mem_info.memory_map[i].addr;
+        region_end_addr = (uint32_t)(mem_info.memory_map[i].addr + mem_info.memory_map[i].len - 1);
+        region_start_page = region_start_addr / PAGE_SIZE;
+        region_end_page = region_end_addr / PAGE_SIZE;
+        // serial_printf("【%d】起始地址:%x - 结束:%x\n", i, region_start_addr, region_end_addr);
+        // serial_printf("【%d】起始页:%x - 结束:%x\n", i, region_start_page, region_end_page);
+        // serial_printf("【%d】页数:%d\n", i, region_end_page - region_start_page + 1);
         
-        if (start_page >= TOTAL_PAGES) continue;
-        if (end_page > TOTAL_PAGES) end_page = TOTAL_PAGES;
-        if (start_page >= end_page) continue;
-
-        for(uint32_t page = start_page; page < end_page; page++)
-        {
-            if(mem_info.memory_map[i].type == 1)
-                mark_page_free(page);
-            else
-                mark_page_used(page);
-        }
+        // 循环找到类型为1的代表可用区域将其标记为可用
+        if(mem_info.memory_map[i].type == 1)
+            // 注意这里循环条件应该是结束页面+1
+            for (uint32_t cur_page = region_start_page; cur_page < region_end_page + 1; cur_page++)
+                mark_page_free(cur_page);
+        else
+            for (uint32_t cur_page = region_start_page; cur_page < region_end_page + 1; cur_page++)
+                mark_page_used(cur_page);
     }
-
-
-    for (uint32_t i = 0; i < mem_info.memory_map_count; i++)
-{
-    uint32_t start_addr = (uint32_t)mem_info.memory_map[i].addr;
-    uint32_t end_addr = start_addr + (uint32_t)mem_info.memory_map[i].len;
-    uint32_t start_page = start_addr / PAGE_SIZE;
-    uint32_t end_page = end_addr / PAGE_SIZE;
-    
-    // 添加边界检查
-    if (start_page >= total_pages) {
-        serial_printf("跳过区域%d: 超出物理内存范围\n", i);
-        continue;
-    }
-    if (end_page > total_pages) {
-        end_page = total_pages;
-    }
-    if (start_page >= end_page) {
-        serial_printf("跳过无效区域%d: 页面%d-%d\n", i, start_page, end_page);
-        continue;
-    }
-    
-    serial_printf("内存区域%d: 0x%x-0x%x, 类型:%d, 页面:%d-%d\n", 
-                 i, start_addr, end_addr, 
-                 mem_info.memory_map[i].type, start_page, end_page);
-    
-    // 检查前3个页面的标记情况
-    for(uint32_t page = start_page; page < end_page && page < start_page + 3; page++)
-    {
-        bool old_state = is_page_free(page);
-        
-        if(mem_info.memory_map[i].type == 1) {
-            mark_page_free(page);
-            serial_printf("  页面%d: %s -> 空闲\n", page, old_state ? "空闲" : "已用");
-        } else {
-            mark_page_used(page);
-            serial_printf("  页面%d: %s -> 已用\n", page, old_state ? "空闲" : "已用");
-        }
-    }
-    
-    if (end_page - start_page > 3) {
-        serial_printf("  ... 还有%d个页面\n", end_page - start_page - 3);
-    }
-}
 }
 
 uint32_t alloc_page(void)
@@ -192,25 +133,25 @@ uint32_t alloc_pages(size_t page_count)
     size_t consecutive_free = 0;
     size_t start_page = 0;
     
-    for (size_t i = 0; i < TOTAL_PAGES; i++) {
-        uint32_t byte_index = i / 8;
-        uint32_t bit_index = i % 8;
-        
-        if (!(phys_bitmap[byte_index] & (1 << bit_index))) {
-            if (consecutive_free == 0) {
+    for (size_t i = 0; i < TOTAL_PAGES; i++)
+    {
+        if (is_page_free(i))
+        {
+            if (consecutive_free == 0)
                 start_page = i;
-            }
+
             consecutive_free++;
             
-            if (consecutive_free == page_count) {
-                for (size_t j = start_page; j < start_page + page_count; j++) {
+            if (consecutive_free == page_count)
+            {
+                for (size_t j = start_page; j < start_page + page_count; j++)
                     mark_page_used(j);
-                }
+
                 return start_page * PAGE_SIZE;
             }
-        } else {
-            consecutive_free = 0;
         }
+        else
+            consecutive_free = 0;
     }
     
     return 0; // 内存不足
@@ -224,13 +165,15 @@ int alloc_pages_discrete(uint32_t* page_array, size_t page_count)
     if (page_count == 0)
         return -EINVAL;
     
-    for (size_t i = 0; i < page_count; i++) {
+    for (size_t i = 0; i < page_count; i++)
+    {
         page_array[i] = alloc_page();
-        if (page_array[i] == 0) {
+        if (page_array[i] == 0)
+        {
             // 分配失败，释放已分配的页
-            for (size_t j = 0; j < i; j++) {
+            for (size_t j = 0; j < i; j++)
                 free_page(page_array[j]);
-            }
+            
             return -ENOMEM;  // 内存不足
         }
     }
@@ -249,22 +192,17 @@ void free_page(uint32_t phys_addr)
 void free_pages(uint32_t phys_addr, size_t page_count)
 {
     int page_index = phys_addr / PAGE_SIZE;
-    if (page_index + page_count > TOTAL_PAGES) {
-        // 超出内存范围
-        return -EMMBADADDR;
-    }
+    // if (page_index + page_count > TOTAL_PAGES)
+        // return -EMMBADADDR; // 超出内存范围
+
     while(page_count--)
-    {
         mark_page_free(page_index++);
-    }
 }
 
 void free_pages_discrete(uint32_t* page_array, size_t page_count)
 {
     for (size_t i = 0; i < page_count; i++)
-    {
         if(page_array[i] != 0) free_page(page_array[i]);
-    }
 }
 
 void get_memory_info(uint32_t* total, uint32_t* free)
@@ -292,7 +230,17 @@ bool is_page_free(uint32_t page_index)
 
     int page_byte = page_index / 8;
     int page_offset = page_index % 8;
+    
     return !(phys_bitmap[page_byte] & (1 << page_offset));
+}
+
+bool is_page_used(uint32_t page_index)
+{
+    if(page_index >= TOTAL_PAGES) return true;
+
+    int page_byte = page_index / 8;
+    int page_offset = page_index % 8;
+    return (phys_bitmap[page_byte] & (1 << page_offset));
 }
 
 void mark_page_used(uint32_t page_index)
@@ -314,7 +262,7 @@ void init_kernel_heap(void)
 {
     // 从物理内存分配连续的堆空间
     uint32_t heap_phys = alloc_pages(HEAP_INIT_PAGES);
-    if(!heap_phys)
+    if(heap_phys < 0)
     {
         kprintf(3, 0, "init_kernel_heap not alloc heap!");
         return;

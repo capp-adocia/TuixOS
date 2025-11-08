@@ -2,12 +2,7 @@
 
 #include <Silan/page.h>
 #include <Silan/serial.h>
-
-char _kernel_text_start[], _kernel_text_end[];
-char _kernel_rodata_start[], _kernel_rodata_end[];
-char _kernel_data_start[], _kernel_data_end[];
-char _kernel_bss_start[], _kernel_bss_end[];
-char _kernel_end[];
+#include <Silan/memory.h>
 
 // 页目录项
 uint32_t page_directory[1024] __attribute__((aligned(4096)));

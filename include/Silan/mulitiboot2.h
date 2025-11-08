@@ -80,8 +80,18 @@ struct system_memory_info {
     // 关键地址边界
     uint32_t first_usable_addr;     // 第一个可用高端内存地址
     uint32_t last_usable_addr;      // 最后一个可用内存地址(不是最大区域的地址)
-    
+    // 内核区域信息
+    uint32_t kernel_start_addr;     // 内核开始地址
+    uint32_t ktext_start_addr;      // 内核text开始地址
+    uint32_t ktext_end_addr;        // 内核text结束地址
+    uint32_t krodata_addr;          // 内核rodata结束地址
+    uint32_t krodata_end_addr;      // 内核rodata结束地址
+    uint32_t kdata_start_addr;      // 内核data开始地址
+    uint32_t kdata_end_addr;        // 内核data结束地址
+    uint32_t kbss_start_addr;       // 内核bss开始地址
+    uint32_t kbss_end_addr;         // 内核bss结束地址
     uint32_t kernel_end_addr;       // 内核结束地址
+
     uint32_t memory_bitmap_addr;    // 内存位图物理地址
     uint32_t memory_bitmap_size;    // 内存位图大小(字节)
     
@@ -91,6 +101,14 @@ struct system_memory_info {
 };
 
 extern struct system_memory_info mem_info;
+
+/* 记录了内核各个部分的界限 */
+extern char _kernel_start[];
+extern char _kernel_text_start[], _kernel_text_end[];
+extern char _kernel_rodata_start[], _kernel_rodata_end[];
+extern char _kernel_data_start[], _kernel_data_end[];
+extern char _kernel_bss_start[], _kernel_bss_end[];
+extern char _kernel_end[];
 
 /**
  * 解析multiboot2的信息

@@ -14,13 +14,6 @@
 #define READ_WRITE_BIT (1 << 1)  // 位1: 读写位：可读可写  
 #define USER_BIT       (1 << 2)  // 位2: 用户位：用户是否可以访问
 
-/* 记录了内核各个部分的界限 */
-extern char _kernel_text_start[], _kernel_text_end[];
-extern char _kernel_rodata_start[], _kernel_rodata_end[];
-extern char _kernel_data_start[], _kernel_data_end[];
-extern char _kernel_bss_start[], _kernel_bss_end[];
-extern char _kernel_end[];
-
 /**
  * 启用分页
  */

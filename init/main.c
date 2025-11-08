@@ -91,7 +91,6 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_page();
     /* 开启中断 */
     __asm__ volatile("sti");
-    
     /* TEST */
     init_keyboard_system();
     // init_timer_system();

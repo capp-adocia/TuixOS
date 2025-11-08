@@ -6,18 +6,21 @@
 #include <stddef.h>
 #include <Silan/mulitiboot2.h>
 
-#define TOTAL_MEMORY 128 * 1024 * 1024
-#define PAGE_SIZE 4096
-#define TOTAL_PAGES (TOTAL_MEMORY / PAGE_SIZE) // 32768页
-
-#define HEAP_INIT_PAGES 4 // 堆初始分配4页
-#define HEAP_ALIGN 8  // 8字节对齐
+/* 物理页管理: 对于80386芯片只有4G地址空间，那么位图应该占用4GB/4KB/8 = 128KB */
+#define MAX_ADDR    0xFFFFFFFF                     
+#define PAGE_SHIFT  12
+#define PAGE_SIZE   (1 << PAGE_SHIFT)              // 4KB = 4096B
+#define TOTAL_PAGES (1 << (32 - PAGE_SHIFT))       // 1024K页 = 1048576页
+#define BITMAP_SIZE (TOTAL_PAGES >> 3)             // 128KB = 131072B
+/* 堆管理 */
+#define HEAP_INIT_PAGES 4                           // 堆初始分配?页
+#define HEAP_ALIGN      8                           // 8B对齐
 #define MIN_BLOCK_SIZE (sizeof(struct heap_block) + HEAP_ALIGN) // 最小分配大小
 #define HEAP_HEAD_SIZE (sizeof(struct heap_block)) // 堆头部大小
 #define HEAP_HEAD_PTR(ptr) ((struct heap_block*)(ptr)) // 强制转换为堆头指针类型
 
 // 物理页位图数组
-extern uint8_t phys_bitmap[32768 / 8];
+extern uint8_t phys_bitmap[BITMAP_SIZE];
 
 // 堆块头
 struct heap_block
@@ -134,6 +137,12 @@ void get_memory_info(uint32_t* total, uint32_t* free);
 bool is_page_free(uint32_t page_index);
 
 /**
+ * 检查页是否使用
+ * @param page_index 页索引
+ * @return 是否使用
+ */
+bool is_page_used(uint32_t page_index);
+/**
  * 标记页为已用（占用）
  * @param page_index 页索引
  */
@@ -141,7 +150,7 @@ void mark_page_used(uint32_t page_index);
 
 /**
  * 标记页为可用（空闲）
- * @param page_index 页索引
+ * @param page_index 页索引(页号，第几号页)
  */
 void mark_page_free(uint32_t page_index);
 
