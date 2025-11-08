@@ -8,7 +8,6 @@
 #include <string.h>
 #include <errno.h>
 #include <def.h>
-#include <Silan/mulitiboot2.h>
 
 uint8_t phys_bitmap[BITMAP_SIZE]; // 131072字节
 struct kernel_heap kheap;
@@ -101,9 +100,6 @@ void init_physical_memory(void)
         region_end_addr = (uint32_t)(mem_info.memory_map[i].addr + mem_info.memory_map[i].len - 1);
         region_start_page = region_start_addr / PAGE_SIZE;
         region_end_page = region_end_addr / PAGE_SIZE;
-        // serial_printf("【%d】起始地址:%x - 结束:%x\n", i, region_start_addr, region_end_addr);
-        // serial_printf("【%d】起始页:%x - 结束:%x\n", i, region_start_page, region_end_page);
-        // serial_printf("【%d】页数:%d\n", i, region_end_page - region_start_page + 1);
         
         // 循环找到类型为1的代表可用区域将其标记为可用
         if(mem_info.memory_map[i].type == 1)
@@ -114,25 +110,40 @@ void init_physical_memory(void)
             for (uint32_t cur_page = region_start_page; cur_page < region_end_page + 1; cur_page++)
                 mark_page_used(cur_page);
     }
+    // 再将内核区域标记为已用
+    uint32_t kstart_page = mem_info.kernel_start_addr / PAGE_SIZE;
+    uint32_t kend_page = mem_info.kernel_end_addr / PAGE_SIZE;
+    // 执行标记
+    for (uint32_t cur_page = kstart_page; cur_page <= kend_page; cur_page++)
+        mark_page_used(cur_page);
 }
 
-uint32_t alloc_page(void)
+uint32_t* alloc_page(int* err_code)
 {
-    return alloc_pages(1);
+    return alloc_pages(1, err_code);
 }
 
-uint32_t alloc_pages(size_t page_count)
+uint32_t* alloc_pages(size_t page_count, int* err_code)
 {
-    if (page_count == 0) 
+    if(err_code) *err_code = 0;
+
+    // 页数为0
+    if (page_count == 0)
+    {
+        if(err_code) *err_code = -1;
         return 0;
+    }
     
     // 检查请求页数是否合理
     if (page_count > TOTAL_PAGES)
+    {
+        if(err_code) *err_code = -1;
         return 0;
+    }
     
     size_t consecutive_free = 0;
     size_t start_page = 0;
-    
+
     for (size_t i = 0; i < TOTAL_PAGES; i++)
     {
         if (is_page_free(i))
@@ -141,19 +152,18 @@ uint32_t alloc_pages(size_t page_count)
                 start_page = i;
 
             consecutive_free++;
-            
             if (consecutive_free == page_count)
             {
                 for (size_t j = start_page; j < start_page + page_count; j++)
                     mark_page_used(j);
 
-                return start_page * PAGE_SIZE;
+                return (uint32_t*)(start_page * PAGE_SIZE);
             }
         }
         else
             consecutive_free = 0;
     }
-    
+    if(err_code) *err_code = -1;
     return 0; // 内存不足
 }
 
@@ -167,8 +177,9 @@ int alloc_pages_discrete(uint32_t* page_array, size_t page_count)
     
     for (size_t i = 0; i < page_count; i++)
     {
-        page_array[i] = alloc_page();
-        if (page_array[i] == 0)
+        int error_code;
+        page_array[i] = alloc_page(&error_code);
+        if (error_code < 0)
         {
             // 分配失败，释放已分配的页
             for (size_t j = 0; j < i; j++)
@@ -261,13 +272,14 @@ void mark_page_free(uint32_t page_index)
 void init_kernel_heap(void)
 {
     // 从物理内存分配连续的堆空间
-    uint32_t heap_phys = alloc_pages(HEAP_INIT_PAGES);
-    if(heap_phys < 0)
+    int error_code;
+    uint32_t* heap_phys = alloc_pages(HEAP_INIT_PAGES, &error_code);
+    if(error_code < 0)
     {
         kprintf(3, 0, "init_kernel_heap not alloc heap!");
         return;
     }
-    // 初始化堆管理结构
+    // 初始化堆管理结构 [start, end)
     kheap.start_addr = (void*)heap_phys;
     kheap.end_addr = (void*)(heap_phys + HEAP_INIT_PAGES * PAGE_SIZE);
     kheap.total_size = HEAP_INIT_PAGES * PAGE_SIZE;
@@ -281,7 +293,7 @@ void init_kernel_heap(void)
     first_block->used = 0; // 标记为空闲
 
     kprintf(3, 0, "---kernel_heap: 0x%x -> 0x%x (%d KB)---", 
-       heap_phys, heap_phys + kheap.total_size, 
+       heap_phys, heap_phys + kheap.total_size - 1, 
        kheap.total_size / 1024);
 }
 

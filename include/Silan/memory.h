@@ -13,7 +13,7 @@
 #define TOTAL_PAGES (1 << (32 - PAGE_SHIFT))       // 1024K页 = 1048576页
 #define BITMAP_SIZE (TOTAL_PAGES >> 3)             // 128KB = 131072B
 /* 堆管理 */
-#define HEAP_INIT_PAGES 4                           // 堆初始分配?页
+#define HEAP_INIT_PAGES 59                         // 堆初始分配?页
 #define HEAP_ALIGN      8                           // 8B对齐
 #define MIN_BLOCK_SIZE (sizeof(struct heap_block) + HEAP_ALIGN) // 最小分配大小
 #define HEAP_HEAD_SIZE (sizeof(struct heap_block)) // 堆头部大小
@@ -84,16 +84,18 @@ void init_physical_memory(void);
 
 /**
  * 单页分配
+ * @param errno 错误码
  * @return 物理地址
  */
-uint32_t alloc_page(void);
+uint32_t* alloc_page(int* err_code);
 
 /**
  * 分配指定数量的物理页（连续分配）
- * @param page_count 分配的页数  
+ * @param page_count 分配的页数
+ * @param err_code 错误码
  * @return 物理地址
  */
-uint32_t alloc_pages(size_t page_count);
+uint32_t* alloc_pages(size_t page_count, int* err_code);
 
 /**
  * 分配指定数量的物理页（离散分配）
