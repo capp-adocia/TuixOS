@@ -1,6 +1,6 @@
 # debug-grub.gdb
 
-set architecture i386:x86-64
+set architecture i386
 
 target remote localhost:1234
 

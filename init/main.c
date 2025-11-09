@@ -97,7 +97,6 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
 
 
     init_task();
-    // ex_task();
 
     while(1) __asm__ volatile("hlt");
 }
