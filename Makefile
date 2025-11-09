@@ -61,6 +61,7 @@ run: $(ISO_IMAGE)
 # 串口调试
 debug: $(ISO_IMAGE)
 	@echo "[QEMU] 启动串口调试..."
+	@echo "[GDB] gdb -x debug/debug-grub.gdb"
 	qemu-system-x86_64 -m 128M -cdrom $(ISO_IMAGE) -serial stdio -s -S -display none
 
 # 清理

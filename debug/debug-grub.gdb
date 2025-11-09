@@ -11,5 +11,4 @@ echo "=== 设置断点 ===\n"
 break kernel_main
 
 echo "=== 开始执行 ===\n"
-echo "使用 'restart' 命令重启调试，QEMU不会关闭\n
 continue

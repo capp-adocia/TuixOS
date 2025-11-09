@@ -39,7 +39,8 @@
         "interrupts_types.h": "c",
         "timer.h": "c",
         "page.h": "c",
-        "mulitiboot2.h": "c"
+        "mulitiboot2.h": "c",
+        "process.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

@@ -38,9 +38,7 @@ void timer_handler(struct interrupt_frame* frame)
     timer_ticks++;
     
     if(timer_ticks % 50 == 0)
-    {
         serial_printf("Timer tick: %d\n", timer_ticks);
-    }
 
     send_eoi(frame->int_no);
 }

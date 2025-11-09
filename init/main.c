@@ -12,6 +12,7 @@
 #include <Silan/page.h>
 #include <Silan/serial.h>
 #include <Silan/mulitiboot2.h>
+#include <Silan/process.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
@@ -55,7 +56,6 @@ void init_keyboard_system(void)
     enable_irq(IRQ_KEYBOARD); // 启用键盘
     // 3. 全局启用中断
     __asm__ volatile("sti");
-    
     kprint(11, 0, "Keyboard system ready...");
 }
 
@@ -94,6 +94,10 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     /* TEST */
     init_keyboard_system();
     // init_timer_system();
+
+
+    init_task();
+    // ex_task();
 
     while(1) __asm__ volatile("hlt");
 }

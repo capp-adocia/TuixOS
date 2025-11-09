@@ -47,12 +47,3 @@ define kwatchlist
     echo \033[1;32m=== 当前监视点 ===\033[0m\n
     info watchpoints
 end
-
-# 重启
-define restart
-    disconnect
-    file out/Silan.kernel
-    target remote localhost:1234
-    break kernel_main
-    echo "GDB已重启，QEMU保持运行\n"
-end
