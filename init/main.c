@@ -98,5 +98,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
 
     init_task();
 
+    serial_printf("\n任务结束，已经返回内核\n");
+
     while(1) __asm__ volatile("hlt");
 }
