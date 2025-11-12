@@ -20,6 +20,7 @@ void init_task(void)
     setup_task_context(&task_a, task);
     // 切换到任务A
     switch_to(task_a.current_esp);
+    // serial_printf("\n任务结束，已经返回内核\n");
 }
 
 void setup_task_context(struct task_stack *task, void (*entry_point)())
@@ -44,17 +45,18 @@ void setup_task_context(struct task_stack *task, void (*entry_point)())
 
 void switch_to(uint32_t* new_esp)
 {
+    // 先压入内核栈，再切换到新栈弹出新栈的eip跳转，完成了内核到进程的切换
     __asm__ volatile(
         "cli\n"
-        "pushfl\n"
         "pushl $0\n" // 先压入0占位
+        "pushfl\n"
         "pusha\n"
-        "movl 40(%%esp), %%eax\n" // 从ESP+44获取返回地址
-        "movl %%eax, 28(%%esp)\n" // 存入ESP+32的EIP预留位置
+        "movl 40(%%esp), %%eax\n" // 从ESP+40获取返回地址
+        "movl %%eax, 36(%%esp)\n" // 存入ESP+36的EIP预留位置
         "mov %%esp, %0\n"
         "mov %1, %%esp\n"
         "popa\n"
-        "iretl\n"
+        "iretl\n" // 弹出新栈的eip 前往新任务的入口地址
         : "=m"(task_a.kernel_esp) : "r"(new_esp) : "eax", "memory"
     );
 }
@@ -64,7 +66,7 @@ void yield(void)
     // 利用内核的esp完成返回
     __asm__ volatile(
         "cli\n"
-        "mov %0, %%esp\n"
+        "mov %0, %%esp\n"  // 切换回内核栈
         "popa\n"           // 弹出8个通用寄存器
         "popfl\n"          // 恢复EFLAGS
         "ret\n"            // 返回
