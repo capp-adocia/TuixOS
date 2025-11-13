@@ -26,4 +26,18 @@ typedef int bool;
 
 #define NULL ((void*)0)
 
+/* 计算成员函数在结构体中的偏移 */
+#define offsetof(type, member) ((size_t)&((type*)0)->member) // 将0作为指针找到member的地址并取地址得到偏移量
+
+/**
+ * 根据结构体成员来获取这个结构体的地址
+ * @param ptr 成员指针
+ * @param type 结构体类型
+ * @param member 结构体成员名称
+ * @return 结构体地址
+ */
+#define container_of(ptr, type, member) \
+    ((type*)((char*)(ptr) - offsetof(type, member)))
+
+
 #endif

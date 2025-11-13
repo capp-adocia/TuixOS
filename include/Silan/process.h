@@ -4,32 +4,40 @@
 #define I_S_PROCESS_H
 
 #include <stddef.h>
+#include <Silan/queue.h>
 
-struct task_stack
+struct process_control_block
 {
-    // 栈内存管理
-    uint32_t* stack_limit;     // 栈顶 低地址
-    uint32_t* stack_start;    // 栈底 高地址，栈起始的地址  
-    uint32_t* current_esp;  // 当前栈指针
-
-    // 内核上下文（从任务切换回内核时需要）
-    uint32_t kernel_esp;    // 内核栈指针
-    uint32_t kernel_eip;    // 返回地址
-    uint32_t kernel_eflags; // 内核标志
-    
-    // 通用寄存器（从内核切换回任务时需要）
-    uint32_t kernel_edi;
-    uint32_t kernel_esi;
-    uint32_t kernel_ebp;
-    uint32_t kernel_ebx;
-    uint32_t kernel_edx;
-    uint32_t kernel_ecx;
-    uint32_t kernel_eax;
-    
     // 任务状态信息
     uint32_t task_id;       // 任务ID
-    uint32_t task_state;    // 运行状态
+    uint32_t task_state;    // 运行状态 就绪、运行、阻塞等
+    
+    // 需要保存的寄存器
+    uint32_t p_esp;
+    uint32_t p_eip;
+    uint32_t p_eflags;
+    uint32_t p_edi;
+    uint32_t p_esi;
+    uint32_t p_ebp;
+    uint32_t p_ebx;
+    uint32_t p_edx;
+    uint32_t p_ecx;
+    uint32_t p_eax;
+    
+    // 调度信息
+    uint32_t time_remaining;    // 剩余时间片
+    uint32_t priority;          // 优先级
+    struct task_stack
+    {
+        uint32_t *limit;        // 栈顶 低地址
+        uint32_t *start;        // 栈底 高地址，栈起始的地址
+        uint32_t *curr;  // 当前栈指针
+    } stack; // 进程对应的栈信息
+    
+    struct list_head ready_node; // 就绪队列
 };
+// 就绪队列
+
 
 /**
  * 初始化一个任务
@@ -45,9 +53,10 @@ void setup_task_context(struct task_stack *task, void (*entry_point)());
 
 /**
  * 任务切换
+ * @param old_esp 旧任务的栈指针
  * @param new_esp 新任务的栈指针
  */
-void switch_to(uint32_t* new_esp);
+void switch_to(uint32_t* old_esp, uint32_t* new_esp);
 
 /**
  * 任务结束，通知调度器
@@ -55,10 +64,10 @@ void switch_to(uint32_t* new_esp);
 void yield(void);
 
 /**
- * 测试：执行一个任务
+ * 测试：执行任务
  */
-void task(void);
-
-
+void task_A(void);
+void task_B(void);
+void task_C(void);
 
 #endif
