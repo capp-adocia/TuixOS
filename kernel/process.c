@@ -6,10 +6,8 @@
 // 分配4KB的任务栈
 static uint32_t ta_stack[1024];
 static uint32_t tb_stack[1024];
-static uint32_t tc_stack[1024];
 struct process_control_block pcb_a;
 struct process_control_block pcb_b;
-struct process_control_block pcb_c;
 struct process_control_block* pcb_curr;
 static uint32_t kernel_esp = 0;
 struct queue r_queue;
@@ -31,13 +29,6 @@ void init_task(void)
     pcb_b.stack.curr = &tb_stack[1024];
     setup_task_context(&(pcb_b.stack), task_B);
     enqueue(&r_queue, &(pcb_b.ready_node));
-
-    // 初始化任务C
-    pcb_c.stack.limit = &tc_stack[0];
-    pcb_c.stack.start = &tc_stack[1024];
-    pcb_c.stack.curr = &tc_stack[1024];
-    setup_task_context(&(pcb_c.stack), task_C);
-    enqueue(&r_queue, &(pcb_c.ready_node));
 
     // 选择第一个任务
     struct list_head* node = dequeue(&r_queue);
@@ -72,8 +63,8 @@ void switch_to(uint32_t* old_esp, uint32_t* new_esp)
 {
     // 先压入内核栈，再切换到新栈弹出新栈的eip跳转，完成了内核到进程的切换
     __asm__ volatile(
-        "cli\n"
         "pushfl\n"                  // 保存内核的数据
+        "cli\n"
         "pushl $0x08\n"
         "subl $4, %%esp\n"          // 为 EIP 预留空间
         "pusha\n"
@@ -93,6 +84,11 @@ void switch_to(uint32_t* old_esp, uint32_t* new_esp)
 // 当进程使用了yield表示这个线程主动释放了cpu使用权，那么此时应该把它加入就绪队列，并从就绪队列中取出一个新任务
 void yield(void)
 {
+    schedule();
+}
+
+void schedule(void)
+{
     // 保存当前pcb
     struct process_control_block* prev = pcb_curr;
     // 将当前任务重新加入就绪队列
@@ -103,10 +99,16 @@ void yield(void)
     if(node)
         pcb_curr = container_of(node, struct process_control_block, ready_node);
 
+    // 现在上下文切换可以单独处理
+    context_switch(prev);
+}
+
+void context_switch(struct process_control_block* prev)
+{
     // 与switch_to对称操作，类似于创建栈帧前往这个新创建的栈帧的esp
     __asm__ volatile(
-        "cli\n"
         "pushfl\n"                  // 保存当前任务的数据
+        "cli\n"
         "pushl $0x08\n"
         "subl $4, %%esp\n"          // 为 EIP 预留空间
         "pusha\n"
@@ -142,18 +144,6 @@ void task_B(void)
     {
         count++;
         serial_printf("B%d ", count);  // 应该输出 B1, B2, B3...
-        for (volatile int i = 0; i < 50000000; i++);
-        yield();
-    }
-}
-
-void task_C(void)
-{
-    int count = 0;
-    while (1)
-    {
-        count++;
-        serial_printf("C%d ", count);  // 应该输出 C1, C2, C3...
         for (volatile int i = 0; i < 50000000; i++);
         yield();
     }

@@ -254,7 +254,7 @@ void isr_security_exception_handler(struct interrupt_frame* frame)
 {
     serial_printf("Security Exception. Error: %x\n", frame->err_code);
     serial_printf("Security violation detected\n");
-    // 安全相关异常，如SGX等，需要谨慎处理
+    // 安全相关异常，需小心处理
 }
 
 // 31: 保留

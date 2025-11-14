@@ -59,15 +59,25 @@ void setup_task_context(struct task_stack *task, void (*entry_point)());
 void switch_to(uint32_t* old_esp, uint32_t* new_esp);
 
 /**
- * 任务结束，通知调度器
+ * 负责主动让出CPU
  */
 void yield(void);
+
+/**
+ * 根据调度策略，选择下一个进程
+ */
+void schedule(void);
+
+/**
+ * 处理上下文切换
+ * @param prev 旧进程的pcb
+ */
+void context_switch(struct process_control_block* prev);
 
 /**
  * 测试：执行任务
  */
 void task_A(void);
 void task_B(void);
-void task_C(void);
 
 #endif

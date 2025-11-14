@@ -20,7 +20,8 @@ void init_timer(uint32_t frequency)
     {
         divisor = 65535;
         serial_printf("Warning: frequency too low, using minimum frequency\n");
-    } else if(divisor < 1)
+    } 
+    else if(divisor < 1)
     {
         divisor = 1;
         serial_printf("Warning: frequency too high, using maximum frequency\n");
@@ -37,7 +38,7 @@ void timer_handler(struct interrupt_frame* frame)
 {
     timer_ticks++;
     
-    if(timer_ticks % 50 == 0)
+    if(timer_ticks % 10 == 0)
         serial_printf("Timer tick: %d\n", timer_ticks);
 
     send_eoi(frame->int_no);

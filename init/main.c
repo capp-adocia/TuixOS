@@ -93,7 +93,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     __asm__ volatile("sti");
     /* TEST */
     init_keyboard_system();
-    // init_timer_system();
+    init_timer_system();
 
     serial_printf("任务开始，即将执行任务...\n");
     init_task();
