@@ -33,9 +33,11 @@ void enable_irq(uint8_t irq)
     uint16_t port;
     uint8_t value;
     
-    if (irq < 8) {
+    if (irq < 8)
         port = PIC1_DATA;
-    } else {
+
+    else
+    {
         port = PIC2_DATA;
         irq -= 8;
     }
@@ -48,9 +50,11 @@ void disable_irq(uint8_t irq)
     uint16_t port;
     uint8_t value;
     
-    if (irq < 8) {
+    if (irq < 8)
         port = PIC1_DATA;
-    } else {
+
+    else
+    {
         port = PIC2_DATA;
         irq -= 8;
     }
@@ -60,8 +64,8 @@ void disable_irq(uint8_t irq)
 
 void send_eoi(uint8_t irq)
 {
-    if (irq >= 8) {
+    if (irq >= 8)
         outb(PIC2_CMD, 0x20);  // 从PIC EOI
-    }
+
     outb(PIC1_CMD, 0x20);      // 主PIC EOI
 }

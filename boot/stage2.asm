@@ -27,7 +27,8 @@ start:
     jmp $ ; 死循环
 
 ; 内存检测
-; struct e820_entry {
+; struct e820_entry
+;{
 ;    uint64_t base_addr;   // 8字节 - 内存起始地址
 ;    uint64_t length;      // 8字节 - 内存区域长度  
 ;    uint32_t type;        // 4字节 - 内存类型

@@ -5,6 +5,9 @@
 
 #include <stddef.h>
 #include <Silan/queue.h>
+#include <Silan/interrupts_types.h>
+
+extern int task_started;
 
 struct process_control_block
 {
@@ -13,16 +16,20 @@ struct process_control_block
     uint32_t task_state;    // 运行状态 就绪、运行、阻塞等
     
     // 需要保存的寄存器
-    uint32_t p_esp;
-    uint32_t p_eip;
-    uint32_t p_eflags;
-    uint32_t p_edi;
-    uint32_t p_esi;
-    uint32_t p_ebp;
-    uint32_t p_ebx;
-    uint32_t p_edx;
-    uint32_t p_ecx;
-    uint32_t p_eax;
+    uint32_t esp;
+    uint32_t eip;
+    uint32_t eflags;
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebp;
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t ecx;
+    uint32_t eax;
+    uint32_t cs;
+    uint32_t ds;
+    uint32_t es;
+    uint32_t ss;
     
     // 调度信息
     uint32_t time_remaining;    // 剩余时间片
@@ -45,11 +52,11 @@ struct process_control_block
 void init_task(void);
 
 /**
- * 创建任务上下文，设置任务栈的一些基本数据
- * @param task 任务栈的结构体指针
+ * 设置pcb的数据
+ * @param pcb 初始化pcb
  * @param entry_point 任务的入口函数
  */
-void setup_task_context(struct task_stack *task, void (*entry_point)());
+void setup_task_context(struct process_control_block* pcb, void (*entry_point)());
 
 /**
  * 任务切换
@@ -69,10 +76,22 @@ void yield(void);
 void schedule(void);
 
 /**
- * 处理上下文切换
+ * 处理上下文切换(在协作式任务切换使用)
  * @param prev 旧进程的pcb
  */
 void context_switch(struct process_control_block* prev);
+
+/**
+ * 保存中断帧信息到当前pcb中
+ * @param frame 中断帧
+ */
+void save_interrupt_frame(struct interrupt_frame* frame);
+
+/**
+ * 将新调度进程的pcb写入中断帧
+ * @param frame 中断帧
+ */
+void restore_to_interrupt_frame(struct interrupt_frame* frame);
 
 /**
  * 测试：执行任务

@@ -42,7 +42,8 @@
         "mulitiboot2.h": "c",
         "process.h": "c",
         "quene.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "tss.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

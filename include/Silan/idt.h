@@ -11,7 +11,8 @@
 #define IDT_ITEM_NUM 256
 
 /* IDT条目 */
-struct idt_entry {
+struct idt_entry
+{
     uint16_t base_low;    // 处理函数地址低16位
     uint16_t selector;    // 代码段选择子
     uint8_t zero;         // 必须为0
@@ -20,7 +21,8 @@ struct idt_entry {
 } __attribute__((packed));
 
 /* IDT指针 */
-struct idt_ptr {
+struct idt_ptr
+{
     uint16_t limit;       // IDT表大小-1
     uint32_t base;        // IDT表基地址
 } __attribute__((packed));

@@ -152,12 +152,12 @@ void parse_memory_map_entries(struct multiboot_tag_mmap* mmap)
                 uint32_t start_32 = (uint32_t)entry->addr;
                 uint32_t end_32 = (uint32_t)end_addr;
                 
-                if (mem_info.first_usable_addr == 0 || start_32 < mem_info.first_usable_addr) {
+                if (mem_info.first_usable_addr == 0 || start_32 < mem_info.first_usable_addr)
                     mem_info.first_usable_addr = start_32;
-                }
-                if (end_32 > mem_info.last_usable_addr) {
+
+                if (end_32 > mem_info.last_usable_addr)
                     mem_info.last_usable_addr = end_32;
-                }
+
             }
         }
 

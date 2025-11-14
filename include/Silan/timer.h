@@ -10,7 +10,7 @@ extern volatile uint32_t timer_ticks;
 
 /**
  * 初始化定时器
- * @param frequency 频率
+ * @param frequency 频率 单位：HZ
  */
 void init_timer(uint32_t frequency);
 

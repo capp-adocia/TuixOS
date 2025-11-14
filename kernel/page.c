@@ -115,7 +115,8 @@ void enable_paging(void)
     // uint32_t mapped_pages = 0;
     // uint32_t max_mapped_addr = 0;
     
-    // for (uint32_t i = 0; i < 1024; i++) {
+    // for (uint32_t i = 0; i < 1024; i++)
+    // {
     //     if (page_directory[i] & PRESENT_BIT)
     //     {
     //         // 这个页目录项有效，映射了4MB区域

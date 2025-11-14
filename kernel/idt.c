@@ -8,9 +8,8 @@ interrupt_handler_t interrupt_handlers[IDT_ITEM_NUM];
 
 struct idt_ptr idtp;
 
-static inline void idt_load(uint32_t idt_ptr) {
-    __asm__ volatile("lidt (%0)" : : "r"(idt_ptr));
-}
+static inline void idt_load(uint32_t idt_ptr) {__asm__ volatile("lidt (%0)" : : "r"(idt_ptr));}
+
 static void idt_set(void);
 static void register_interrupt_handlers(void);
 
@@ -36,25 +35,26 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
 }
 
 // 传结构体指针时，逆序push结构体的字段!!!
-void isr_common(void) {
+void isr_common(void)
+{
     __asm__ volatile(
-        "pusha\n\t" // 压入 edi,esi,ebp,esp,ebx,edx,ecx,eax
-        "pushl %%ds\n\t" // 压入 ds
-        "pushl %%es\n\t" // 压入 es
+        "pusha\n" // 压入 edi,esi,ebp,esp,ebx,edx,ecx,eax
+        "pushl %%ds\n" // 压入 ds
+        "pushl %%es\n" // 压入 es
         
-        "movw $0x10, %%ax\n\t"
-        "movw %%ax, %%ds\n\t"
-        "movw %%ax, %%es\n\t"
+        "movw $0x10, %%ax\n"
+        "movw %%ax, %%ds\n"
+        "movw %%ax, %%es\n"
         
-        "pushl %%esp\n\t" // 压入 当前的ESP值（指向第一个字段es的位置）
-        "call isr_handler\n\t"
-        "addl $4, %%esp\n\t"
+        "pushl %%esp\n" // 压入 当前的ESP值（指向第一个字段es的位置）
+        "call isr_handler\n"
+        "addl $4, %%esp\n"
         
-        "popl %%es\n\t"
-        "popl %%ds\n\t"
-        "popa\n\t"
-        "addl $8, %%esp\n\t"
-        "iret\n\t"
+        "popl %%es\n"
+        "popl %%ds\n"
+        "popa\n"
+        "addl $8, %%esp\n"
+        "iret\n"
         : : : "memory"
     );
 }

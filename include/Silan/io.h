@@ -26,7 +26,8 @@ static inline void outw(uint16_t port, uint16_t value)
 }
 
 /* 端口输入字 (16位) */
-static inline uint16_t inw(uint16_t port) {
+static inline uint16_t inw(uint16_t port)
+{
     uint16_t ret;
     __asm__ volatile("inw %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;

@@ -68,7 +68,8 @@ struct multiboot_tag_basic_meminfo
     uint32_t mem_upper;  // 1MB以上内存大小(KB)
 };
 
-struct system_memory_info {
+struct system_memory_info
+{
     // 内存映射信息
     struct multiboot_mmap_entry memory_map[32];
     uint32_t memory_map_count;      // 内存映射条目数

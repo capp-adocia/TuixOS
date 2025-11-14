@@ -79,7 +79,7 @@ void isr_invalid_opcode_handler(struct interrupt_frame* frame)
 // 7: 设备不可用 - 可恢复，模拟或禁用
 void isr_device_not_available_handler(struct interrupt_frame* frame)
 {
-    serial_printf("Device Not Available at EIP: %x\n", frame->eip);
+    serial_printf("Device Not Available\n");
     __asm__ volatile("mov %cr0, %eax; and $0xFFFFFFFB, %eax; mov %eax, %cr0\n");
 }
 
@@ -87,7 +87,6 @@ void isr_device_not_available_handler(struct interrupt_frame* frame)
 void isr_double_fault_handler(struct interrupt_frame* frame)
 {
     serial_printf("Double Fault! Error: %x\n", frame->err_code);
-    serial_printf("EIP: %x, System Halted\n", frame->eip);
     while(1) __asm__ volatile("cli; hlt");
 }
 
@@ -126,7 +125,7 @@ void isr_stack_segment_fault_handler(struct interrupt_frame* frame)
 void isr_general_protection_fault_handler(struct interrupt_frame* frame)
 {
     serial_printf("General Protection Fault! Error: %x\n", frame->err_code);
-    serial_printf("EIP: %x, CS: %x - System Halted\n", frame->eip, frame->cs);
+    serial_printf("System Halted\n");
     while(1) __asm__ volatile("cli; hlt");
 }
 

@@ -18,9 +18,8 @@ void* memset(void* dst, int val, size_t count)
         return NULL;
     
     char* temp = (char*)dst;
-    for (size_t i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++)
         *temp++ = (char)val;
-    }
     
     return dst;
 }
@@ -35,9 +34,7 @@ void* memcpy(void* dst, const void* src, size_t count)
     char* dst_t = (char*)dst;
     const char* src_t = (const char*)src;
     
-    while (count--) {
-        *dst_t++ = *src_t++;
-    }
+    while (count--) *dst_t++ = *src_t++;
     return dst;
 }
 void* memmove(void* dst, const void* src, size_t count)
@@ -50,19 +47,15 @@ void* memmove(void* dst, const void* src, size_t count)
     
     char* d = (char*)dst;
     const char* s = (const char*)src;
-    
-    if (d < s) {
-        // 目标在源前面，正向拷贝
-        while (count--) {
-            *d++ = *s++;
-        }
-    } else {
+    // 目标在源前面，正向拷贝
+    if (d < s) while (count--) *d++ = *s++;
+    else
+    {
         // 目标在源后面，反向拷贝从末尾开始
         d += count;
         s += count;
-        while (count--) {
+        while (count--)
             *--d = *--s;
-        }
     }
     return dst;
 }
@@ -78,10 +71,8 @@ int memcmp(const void* ptr1, const void* ptr2, size_t count)
     const unsigned char* p1 = (const unsigned char*)ptr1;
     const unsigned char* p2 = (const unsigned char*)ptr2;
     
-    while (count-- > 0) {
-        if (*p1 != *p2) {
-            return (*p1 < *p2) ? -1 : 1;
-        }
+    while (count-- > 0){
+        if (*p1 != *p2) return (*p1 < *p2) ? -1 : 1;
         p1++;
         p2++;
     }
@@ -223,14 +214,15 @@ void get_memory_info(uint32_t* total, uint32_t* free)
     
     // 统计空闲页数
     uint32_t free_count = 0;
-    for (size_t i = 0; i < TOTAL_PAGES; i++) {
+    for (size_t i = 0; i < TOTAL_PAGES; i++)
+    {
         uint32_t byte_index = i / 8;
         uint32_t bit_index = i % 8;
         
         // 检查该位是否为0（空闲）
-        if (!(phys_bitmap[byte_index] & (1 << bit_index))) {
+        if (!(phys_bitmap[byte_index] & (1 << bit_index)))
             free_count++;
-        }
+
     }
     *free = free_count;
 }
@@ -367,11 +359,13 @@ void kmalloc_compact(void)
     
     while ((char*)cur_ptr < (char*)end)
     {
-        if (cur_ptr->used == 0) {
+        if (cur_ptr->used == 0)
+        {
             // 持续合并后续的空闲块
             struct heap_block* next_ptr = HEAP_HEAD_PTR((char*)cur_ptr + cur_ptr->size);
             
-            while ((char*)next_ptr < (char*)end && next_ptr->used == 0) {
+            while ((char*)next_ptr < (char*)end && next_ptr->used == 0)
+            {
                 cur_ptr->size += next_ptr->size;
                 next_ptr = HEAP_HEAD_PTR((char*)cur_ptr + cur_ptr->size);
             }

@@ -13,12 +13,14 @@
 #include <Silan/serial.h>
 #include <Silan/mulitiboot2.h>
 #include <Silan/process.h>
+#include <Silan/tss.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
 void print_LOGO(void);
 
-const char *logo[] = {
+const char *logo[] =
+{
     "SSSSSS  IIIIII  LL    A     NN   NN ",
     "SS        II    LL   A A    NNN  NN ",
     " SSSSS    II    LL  AAAAA   NN N NN ",
@@ -76,6 +78,8 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_show();
     /* 解析mbi_addr */
     parse_multiboot2_info(magic, mbi_addr);
+    /* 初始化tss */
+    init_tss();
     /* 设置好gdt表项 */
     init_gdt();
     /* 内存初始化 */
@@ -93,12 +97,11 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     __asm__ volatile("sti");
     /* TEST */
     init_keyboard_system();
-    init_timer_system();
-
+    
     serial_printf("任务开始，即将执行任务...\n");
+    init_timer_system();
     init_task();
     serial_printf("任务结束，已经返回内核\n");
-    
 
     while(1) __asm__ volatile("hlt");
 }
