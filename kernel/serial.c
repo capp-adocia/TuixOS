@@ -1,6 +1,6 @@
 /* kernel/serial.c */
 
-#include <Silan/serial.h>
+#include <TuiPlus/serial.h>
 #include <stdarg.h>
 
 static void serial_print_int(int num, int base);

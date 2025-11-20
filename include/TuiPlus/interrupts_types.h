@@ -1,7 +1,7 @@
-/* include/Silan/interrupts_types.h */
+/* include/TuiPlus/interrupts_types.h */
 
-#ifndef I_S_INTERRUPTSTYPES_H
-#define I_S_INTERRUPTSTYPES_H
+#ifndef I_T_INTERRUPTSTYPES_H
+#define I_T_INTERRUPTSTYPES_H
 
 struct interrupt_frame
 {

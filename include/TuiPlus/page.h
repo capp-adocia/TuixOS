@@ -1,7 +1,7 @@
-/* include/Silan/page.h */
+/* include/TuiPlus/page.h */
 
-#ifndef I_S_PAGE_H
-#define I_S_PAGE_H
+#ifndef I_T_PAGE_H
+#define I_T_PAGE_H
 
 #include <stddef.h>
 

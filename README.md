@@ -1,4 +1,4 @@
-# SilanOS
+# TuiPlusOS
 
 `思岚操作系统`
 ![start](./img/image.png)

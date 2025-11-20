@@ -1,7 +1,7 @@
-/* include/Silan/idt_list.h 保存idt x宏 */
+/* include/TuiPlus/idt_list.h 保存idt x宏 */
 
-#ifndef I_S_IDT_LIST_H
-#define I_S_IDT_LIST_H
+#ifndef I_T_IDT_LIST_H
+#define I_T_IDT_LIST_H
 
 /*
     使用诸如这样:

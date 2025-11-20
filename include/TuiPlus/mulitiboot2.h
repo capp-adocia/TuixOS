@@ -1,7 +1,7 @@
-/* include/Silan/mulitiboot2.h */
+/* include/TuiPlus/mulitiboot2.h */
 
-#ifndef I_S_M2_H
-#define I_S_M2_H
+#ifndef I_T_M2_H
+#define I_T_M2_H
 
 #include <stddef.h>
 

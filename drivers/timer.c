@@ -1,10 +1,10 @@
 /* driver/timer.c */
 
-#include <Silan/timer.h>
-#include <Silan/io.h>
-#include <Silan/serial.h>
-#include <Silan/pic.h>
-#include <Silan/process.h>
+#include <TuiPlus/timer.h>
+#include <TuiPlus/io.h>
+#include <TuiPlus/serial.h>
+#include <TuiPlus/pic.h>
+#include <TuiPlus/process.h>
 
 volatile uint32_t timer_ticks = 0;
 

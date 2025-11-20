@@ -1,7 +1,7 @@
 /* kernel/process.c */
 
-#include <Silan/process.h>
-#include <Silan/serial.h>
+#include <TuiPlus/process.h>
+#include <TuiPlus/serial.h>
 
 // 分配4KB的任务栈
 static uint32_t ta_stack[1024];

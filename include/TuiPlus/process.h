@@ -1,11 +1,11 @@
-/* include/Silan/process.h */
+/* include/TuiPlus/process.h */
 
-#ifndef I_S_PROCESS_H
-#define I_S_PROCESS_H
+#ifndef I_T_PROCESS_H
+#define I_T_PROCESS_H
 
 #include <stddef.h>
-#include <Silan/queue.h>
-#include <Silan/interrupts_types.h>
+#include <TuiPlus/queue.h>
+#include <TuiPlus/interrupts_types.h>
 
 extern int task_started;
 

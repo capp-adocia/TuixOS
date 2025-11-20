@@ -3,8 +3,8 @@
 #ifndef MM_MEMORY_H
 #define MM_MEMORY_H
 
-#include <Silan/memory.h>
-#include <Silan/screen.h>
+#include <TuiPlus/memory.h>
+#include <TuiPlus/screen.h>
 #include <string.h>
 #include <errno.h>
 #include <def.h>

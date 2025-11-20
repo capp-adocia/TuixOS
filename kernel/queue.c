@@ -1,6 +1,6 @@
 /* kernel/queue.c */
 
-#include <Silan/queue.h>
+#include <TuiPlus/queue.h>
 
 void enqueue(struct queue* q, struct list_head* node)
 {

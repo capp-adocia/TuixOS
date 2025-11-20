@@ -1,10 +1,10 @@
-/* include/Silan/queue.h */
+/* include/TuiPlus/queue.h */
 
-#ifndef I_S_QUEUE_H
-#define I_S_QUEUE_H
+#ifndef I_T_QUEUE_H
+#define I_T_QUEUE_H
 
 #include <stddef.h>
-#include <Silan/serial.h>
+#include <TuiPlus/serial.h>
 
 struct list_head
 {

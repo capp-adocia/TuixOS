@@ -1,9 +1,9 @@
-/* include/Silan/serial.h */
+/* include/TuiPlus/serial.h */
 
-#ifndef I_S_SERIAL_H
-#define I_S_SERIAL_H
+#ifndef I_T_SERIAL_H
+#define I_T_SERIAL_H
 
-#include <Silan/io.h>
+#include <TuiPlus/io.h>
 
 /**
  * 初始化串口

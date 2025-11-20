@@ -1,6 +1,6 @@
 /* driver/screen.c */
 
-#include <Silan/screen.h>
+#include <TuiPlus/screen.h>
 
 void put_char(const char c, int row, int col)
 {

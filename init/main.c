@@ -1,19 +1,19 @@
 /* init/main.c 实现C内核 */
-#include <Silan/screen.h>
-#include <Silan/memory.h>
+#include <TuiPlus/screen.h>
+#include <TuiPlus/memory.h>
 #include <string.h>
 #include <stddef.h>
 #include <def.h>
-#include <Silan/gdt.h>
-#include <Silan/idt.h>
-#include <Silan/pic.h>
-#include <Silan/serial.h>
-#include <Silan/timer.h>
-#include <Silan/page.h>
-#include <Silan/serial.h>
-#include <Silan/mulitiboot2.h>
-#include <Silan/process.h>
-#include <Silan/tss.h>
+#include <TuiPlus/gdt.h>
+#include <TuiPlus/idt.h>
+#include <TuiPlus/pic.h>
+#include <TuiPlus/serial.h>
+#include <TuiPlus/timer.h>
+#include <TuiPlus/page.h>
+#include <TuiPlus/serial.h>
+#include <TuiPlus/mulitiboot2.h>
+#include <TuiPlus/process.h>
+#include <TuiPlus/tss.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
@@ -21,11 +21,11 @@ void print_LOGO(void);
 
 const char *logo[] =
 {
-    "SSSSSS  IIIIII  LL    A     NN   NN ",
-    "SS        II    LL   A A    NNN  NN ",
-    " SSSSS    II    LL  AAAAA   NN N NN ",
-    "    SS    II    LL AA   AA  NN  NNN ",
-    "SSSSSS  IIIIII  LL AA   AA  NN   NN "};
+    "TTTTTTTT  UU   UU  IIIIII    +       +",
+    "   TT     UU   UU    II      +       +",
+    "   TT     UU   UU    II   +++++++ +++++++",
+    "   TT     UU   UU    II      +       +",
+    "   TT      UUUUU   IIIIII    +       +"};
 
 void print_LOGO(void)
 {
@@ -34,7 +34,7 @@ void print_LOGO(void)
     {
         kprint(9 + i, 21, logo[i]);
     }
-    kprint(20, 33, "SilanOS v0.01");
+    kprint(20, 33, "TuiPlusOS v0.01");
 
     volatile int c = 500000; // 加 volatile 避免被优化
     while (c--)
@@ -47,7 +47,7 @@ void print_LOGO(void)
 void init_show(void)
 {
     clear_screen();
-    // print_LOGO();
+    print_LOGO();
     // clear_screen();
 }
 
@@ -73,7 +73,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     __asm__ volatile("cli");
     /* 初始化串口 */
     init_serial();
-    serial_printf("=== Silan OS 启动 ===\r\n");
+    serial_printf("=== TuiPlus OS 启动 ===\r\n");
     /* 基础显示 */
     init_show();
     /* 解析mbi_addr */

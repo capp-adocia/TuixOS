@@ -1,8 +1,8 @@
 /* kernel/page.c */
 
-#include <Silan/page.h>
-#include <Silan/serial.h>
-#include <Silan/memory.h>
+#include <TuiPlus/page.h>
+#include <TuiPlus/serial.h>
+#include <TuiPlus/memory.h>
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 

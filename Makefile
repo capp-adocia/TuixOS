@@ -27,8 +27,8 @@ C_OBJS = $(C_SRCS:%.c=$(BUILD_DIR)/%.o)
 ASM_OBJS = $(BUILD_DIR)/boot/kernel_entry.o
 
 # 目标
-KERNEL_ELF = $(BUILD_DIR)/Silan.kernel
-ISO_IMAGE = Silan-os.iso
+KERNEL_ELF = $(BUILD_DIR)/TuiPlus.kernel
+ISO_IMAGE = TuiPlus-os.iso
 
 .PHONY: all clean run help
 

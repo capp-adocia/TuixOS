@@ -1,9 +1,9 @@
-/* include/Silan/isr.h 中断入口桩（硬件层面） */
+/* include/TuiPlus/isr.h 中断入口桩（硬件层面） */
 
-#ifndef I_S_ISR_H
-#define I_S_ISR_H
+#ifndef I_T_ISR_H
+#define I_T_ISR_H
 
-#include <Silan/idt_list.h>
+#include <TuiPlus/idt_list.h>
 
 #define X(num, name) void isr_##name##_stub(void);
     IDT_LIST_EXP // 0-31: CPU 异常

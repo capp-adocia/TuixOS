@@ -1,10 +1,10 @@
-/* include/Silan/memory.h */
+/* include/TuiPlus/memory.h */
 
-#ifndef I_S_MEMORY_H
-#define I_S_MEMORY_H
+#ifndef I_T_MEMORY_H
+#define I_T_MEMORY_H
 
 #include <stddef.h>
-#include <Silan/mulitiboot2.h>
+#include <TuiPlus/mulitiboot2.h>
 
 /* 物理页管理: 对于80386芯片只有4G地址空间，那么位图应该占用4GB/4KB/8 = 128KB */
 #define MAX_ADDR    0xFFFFFFFF                     

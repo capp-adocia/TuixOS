@@ -1,6 +1,6 @@
 /* kernel/tss.c */
 
-#include <Silan/tss.h>
+#include <TuiPlus/tss.h>
 
 struct tss_entry tss;
 uint32_t kernel_stack[1024];  // 4KB内核栈

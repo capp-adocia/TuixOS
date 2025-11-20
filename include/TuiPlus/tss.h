@@ -1,7 +1,7 @@
-/* include/Silan/tss.h */
+/* include/TuiPlus/tss.h */
 
-#ifndef I_S_TSS_H
-#define I_S_TSS_H
+#ifndef I_T_TSS_H
+#define I_T_TSS_H
 
 #include <stddef.h>
 

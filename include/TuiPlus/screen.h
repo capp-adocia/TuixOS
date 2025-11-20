@@ -1,7 +1,7 @@
-/* include/Silan/screen.h */
+/* include/TuiPlus/screen.h */
 
-#ifndef I_S_SCREEN_H
-#define I_S_SCREEN_H
+#ifndef I_T_SCREEN_H
+#define I_T_SCREEN_H
 
 #include <stddef.h>
 #include <stdarg.h>

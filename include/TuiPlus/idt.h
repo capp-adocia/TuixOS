@@ -1,11 +1,11 @@
-/* include/Silan/idt.h */
+/* include/TuiPlus/idt.h */
 
-#ifndef I_S_IDT_H
-#define I_S_IDT_H
+#ifndef I_T_IDT_H
+#define I_T_IDT_H
 
 #include <stddef.h>
-#include <Silan/isr.h>
-#include <Silan/interrupts.h>
+#include <TuiPlus/isr.h>
+#include <TuiPlus/interrupts.h>
 
 /* 中断数量 */
 #define IDT_ITEM_NUM 256

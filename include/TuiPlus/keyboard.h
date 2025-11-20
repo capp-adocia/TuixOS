@@ -1,10 +1,10 @@
-/* include/Silan/keyboard.h 处理键盘中断 */
+/* include/TuiPlus/keyboard.h 处理键盘中断 */
 
-#ifndef I_S_KEYBOARD_H
-#define I_S_KEYBOARD_H
+#ifndef I_T_KEYBOARD_H
+#define I_T_KEYBOARD_H
 
 #include <stddef.h>
-#include <Silan/interrupts_types.h>
+#include <TuiPlus/interrupts_types.h>
 
 /**
  * 扫描码到字符的映射

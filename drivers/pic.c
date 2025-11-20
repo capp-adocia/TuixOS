@@ -1,7 +1,7 @@
 /* driver/pic.c - 8259A PIC初始化 */
 
-#include <Silan/io.h>
-#include <Silan/pic.h>
+#include <TuiPlus/io.h>
+#include <TuiPlus/pic.h>
 
 /* 初始化8259A PIC */
 void init_pic(void)

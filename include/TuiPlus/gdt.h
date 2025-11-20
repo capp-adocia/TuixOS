@@ -1,10 +1,10 @@
-/* include/Silan/gdt.h */
+/* include/TuiPlus/gdt.h */
 
-#ifndef I_S_GDT_H
-#define I_S_GDT_H
+#ifndef I_T_GDT_H
+#define I_T_GDT_H
 
 #include <stddef.h>
-#include <Silan/tss.h>
+#include <TuiPlus/tss.h>
 
 struct gdt_entry
 {

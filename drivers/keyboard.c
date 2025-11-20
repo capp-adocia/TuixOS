@@ -1,9 +1,9 @@
 /* driver/keyboard.c */
 
-#include <Silan/keyboard.h>
-#include <Silan/screen.h>
-#include <Silan/io.h>
-#include <Silan/serial.h>
+#include <TuiPlus/keyboard.h>
+#include <TuiPlus/screen.h>
+#include <TuiPlus/io.h>
+#include <TuiPlus/serial.h>
 
 char scancode_to_char(uint8_t scancode)
 {

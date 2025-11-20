@@ -1,4 +1,4 @@
-/* include/Silan/pic.h - 8259A PIC操作 */
+/* include/TuiPlus/pic.h - 8259A PIC操作 */
 
 #ifndef I_PIC_H
 #define I_PIC_H

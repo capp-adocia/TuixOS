@@ -1,12 +1,12 @@
 /* kernel/interrupts.c */
 
-#include <Silan/interrupts.h>
-#include <Silan/screen.h>
-#include <Silan/io.h>
+#include <TuiPlus/interrupts.h>
+#include <TuiPlus/screen.h>
+#include <TuiPlus/io.h>
 #include <stddef.h>
-#include <Silan/keyboard.h>
-#include <Silan/timer.h>
-#include <Silan/serial.h>
+#include <TuiPlus/keyboard.h>
+#include <TuiPlus/timer.h>
+#include <TuiPlus/serial.h>
 
 void isr_default_handler(struct interrupt_frame* frame)
 {

@@ -1,10 +1,10 @@
-/* include/Silan/timer.h */
+/* include/TuiPlus/timer.h */
 
-#ifndef I_S_TIMER_H
-#define I_S_TIMER_H
+#ifndef I_T_TIMER_H
+#define I_T_TIMER_H
 
 #include <stddef.h>
-#include <Silan/interrupts_types.h>
+#include <TuiPlus/interrupts_types.h>
 
 extern volatile uint32_t timer_ticks;
 

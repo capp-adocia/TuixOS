@@ -1,7 +1,7 @@
-/* include/Silan/io.h */
+/* include/TuiPlus/io.h */
 
-#ifndef I_S_IO_H
-#define I_S_IO_H
+#ifndef I_T_IO_H
+#define I_T_IO_H
 
 #include <stddef.h>
 
