@@ -22,12 +22,14 @@ system (内核)
 2. sudo apt-get install xorriso
 
 3. 统计行数
+
 ```makefile
 find . -name "*.c" -o -name "*.h" | xargs wc -l
 ```
 
-4. 如果修改时git忘记pull了，可以使用rebase这个选项来重建
-```
+1. 如果修改时git忘记pull了，可以使用rebase这个选项来重建
+
+```makefile
 git pull --rebase
 ...
 git push
