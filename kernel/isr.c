@@ -1,6 +1,6 @@
 /* kernel/isr.c */
 
-#include <TuiPlus/isr.h>
+#include <Tuix/isr.h>
 
 #define ISR_NOERRNAME(num, name) \
 void isr_##name##_stub(void) { \

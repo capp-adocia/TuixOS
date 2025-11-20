@@ -1,7 +1,7 @@
 /* kernel/mulitiboot2.c */
 
-#include <TuiPlus/mulitiboot2.h>
-#include <TuiPlus/serial.h>
+#include <Tuix/mulitiboot2.h>
+#include <Tuix/serial.h>
 #include <def.h>
 
 struct system_memory_info mem_info = {0};

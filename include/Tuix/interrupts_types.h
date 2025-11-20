@@ -1,4 +1,4 @@
-/* include/TuiPlus/interrupts_types.h */
+/* include/Tuix/interrupts_types.h */
 
 #ifndef I_T_INTERRUPTSTYPES_H
 #define I_T_INTERRUPTSTYPES_H

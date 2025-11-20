@@ -1,10 +1,10 @@
-/* include/TuiPlus/interrupts.h 中断处理函数（软件层面） */
+/* include/Tuix/interrupts.h 中断处理函数（软件层面） */
 
 #ifndef I_T_INTERRUPTS_H
 #define I_T_INTERRUPTS_H
 
 #include <stddef.h>
-#include <TuiPlus/interrupts_types.h>
+#include <Tuix/interrupts_types.h>
 
 // 每个中断号对应的处理函数 interrupt_frame
 typedef void (*interrupt_handler_t)(struct interrupt_frame*);

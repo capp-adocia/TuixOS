@@ -1,12 +1,12 @@
 /* kernel/interrupts.c */
 
-#include <TuiPlus/interrupts.h>
-#include <TuiPlus/screen.h>
-#include <TuiPlus/io.h>
+#include <Tuix/interrupts.h>
+#include <Tuix/screen.h>
+#include <Tuix/io.h>
 #include <stddef.h>
-#include <TuiPlus/keyboard.h>
-#include <TuiPlus/timer.h>
-#include <TuiPlus/serial.h>
+#include <Tuix/keyboard.h>
+#include <Tuix/timer.h>
+#include <Tuix/serial.h>
 
 void isr_default_handler(struct interrupt_frame* frame)
 {

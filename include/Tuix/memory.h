@@ -1,10 +1,10 @@
-/* include/TuiPlus/memory.h */
+/* include/Tuix/memory.h */
 
 #ifndef I_T_MEMORY_H
 #define I_T_MEMORY_H
 
 #include <stddef.h>
-#include <TuiPlus/mulitiboot2.h>
+#include <Tuix/mulitiboot2.h>
 
 /* 物理页管理: 对于80386芯片只有4G地址空间，那么位图应该占用4GB/4KB/8 = 128KB */
 #define MAX_ADDR    0xFFFFFFFF                     

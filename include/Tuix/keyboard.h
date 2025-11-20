@@ -1,10 +1,10 @@
-/* include/TuiPlus/keyboard.h 处理键盘中断 */
+/* include/Tuix/keyboard.h 处理键盘中断 */
 
 #ifndef I_T_KEYBOARD_H
 #define I_T_KEYBOARD_H
 
 #include <stddef.h>
-#include <TuiPlus/interrupts_types.h>
+#include <Tuix/interrupts_types.h>
 
 /**
  * 扫描码到字符的映射

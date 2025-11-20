@@ -1,4 +1,4 @@
-/* include/TuiPlus/tss.h */
+/* include/Tuix/tss.h */
 
 #ifndef I_T_TSS_H
 #define I_T_TSS_H

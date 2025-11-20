@@ -1,6 +1,6 @@
 /* kernel/gdt.c */
 
-#include <TuiPlus/gdt.h>
+#include <Tuix/gdt.h>
 
 struct gdt_entry gdt_entries[6];
 

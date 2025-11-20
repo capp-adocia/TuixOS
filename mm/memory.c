@@ -3,8 +3,8 @@
 #ifndef MM_MEMORY_H
 #define MM_MEMORY_H
 
-#include <TuiPlus/memory.h>
-#include <TuiPlus/screen.h>
+#include <Tuix/memory.h>
+#include <Tuix/screen.h>
 #include <string.h>
 #include <errno.h>
 #include <def.h>

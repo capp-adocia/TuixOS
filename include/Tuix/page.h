@@ -1,4 +1,4 @@
-/* include/TuiPlus/page.h */
+/* include/Tuix/page.h */
 
 #ifndef I_T_PAGE_H
 #define I_T_PAGE_H

@@ -1,10 +1,10 @@
-/* include/TuiPlus/queue.h */
+/* include/Tuix/queue.h */
 
 #ifndef I_T_QUEUE_H
 #define I_T_QUEUE_H
 
 #include <stddef.h>
-#include <TuiPlus/serial.h>
+#include <Tuix/serial.h>
 
 struct list_head
 {

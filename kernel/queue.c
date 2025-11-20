@@ -1,6 +1,6 @@
 /* kernel/queue.c */
 
-#include <TuiPlus/queue.h>
+#include <Tuix/queue.h>
 
 void enqueue(struct queue* q, struct list_head* node)
 {

@@ -1,10 +1,10 @@
-/* include/TuiPlus/gdt.h */
+/* include/Tuix/gdt.h */
 
 #ifndef I_T_GDT_H
 #define I_T_GDT_H
 
 #include <stddef.h>
-#include <TuiPlus/tss.h>
+#include <Tuix/tss.h>
 
 struct gdt_entry
 {

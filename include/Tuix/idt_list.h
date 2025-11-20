@@ -1,4 +1,4 @@
-/* include/TuiPlus/idt_list.h 保存idt x宏 */
+/* include/Tuix/idt_list.h 保存idt x宏 */
 
 #ifndef I_T_IDT_LIST_H
 #define I_T_IDT_LIST_H

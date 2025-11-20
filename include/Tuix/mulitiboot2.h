@@ -1,4 +1,4 @@
-/* include/TuiPlus/mulitiboot2.h */
+/* include/Tuix/mulitiboot2.h */
 
 #ifndef I_T_M2_H
 #define I_T_M2_H

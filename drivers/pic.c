@@ -1,7 +1,7 @@
 /* driver/pic.c - 8259A PIC初始化 */
 
-#include <TuiPlus/io.h>
-#include <TuiPlus/pic.h>
+#include <Tuix/io.h>
+#include <Tuix/pic.h>
 
 /* 初始化8259A PIC */
 void init_pic(void)

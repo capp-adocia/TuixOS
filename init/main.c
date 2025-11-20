@@ -1,19 +1,19 @@
 /* init/main.c 实现C内核 */
-#include <TuiPlus/screen.h>
-#include <TuiPlus/memory.h>
+#include <Tuix/screen.h>
+#include <Tuix/memory.h>
 #include <string.h>
 #include <stddef.h>
 #include <def.h>
-#include <TuiPlus/gdt.h>
-#include <TuiPlus/idt.h>
-#include <TuiPlus/pic.h>
-#include <TuiPlus/serial.h>
-#include <TuiPlus/timer.h>
-#include <TuiPlus/page.h>
-#include <TuiPlus/serial.h>
-#include <TuiPlus/mulitiboot2.h>
-#include <TuiPlus/process.h>
-#include <TuiPlus/tss.h>
+#include <Tuix/gdt.h>
+#include <Tuix/idt.h>
+#include <Tuix/pic.h>
+#include <Tuix/serial.h>
+#include <Tuix/timer.h>
+#include <Tuix/page.h>
+#include <Tuix/serial.h>
+#include <Tuix/mulitiboot2.h>
+#include <Tuix/process.h>
+#include <Tuix/tss.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
@@ -34,7 +34,7 @@ void print_LOGO(void)
     {
         kprint(9 + i, 21, logo[i]);
     }
-    kprint(20, 33, "TuiPlusOS v0.01");
+    kprint(20, 33, "TuixOS v0.01");
 
     volatile int c = 500000; // 加 volatile 避免被优化
     while (c--)
@@ -73,7 +73,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     __asm__ volatile("cli");
     /* 初始化串口 */
     init_serial();
-    serial_printf("=== TuiPlus OS 启动 ===\r\n");
+    serial_printf("=== Tuix OS 启动 ===\r\n");
     /* 基础显示 */
     init_show();
     /* 解析mbi_addr */

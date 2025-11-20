@@ -1,4 +1,4 @@
-/* include/TuiPlus/io.h */
+/* include/Tuix/io.h */
 
 #ifndef I_T_IO_H
 #define I_T_IO_H

@@ -1,10 +1,10 @@
-/* include/TuiPlus/timer.h */
+/* include/Tuix/timer.h */
 
 #ifndef I_T_TIMER_H
 #define I_T_TIMER_H
 
 #include <stddef.h>
-#include <TuiPlus/interrupts_types.h>
+#include <Tuix/interrupts_types.h>
 
 extern volatile uint32_t timer_ticks;
 

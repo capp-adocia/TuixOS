@@ -1,10 +1,10 @@
 /* driver/timer.c */
 
-#include <TuiPlus/timer.h>
-#include <TuiPlus/io.h>
-#include <TuiPlus/serial.h>
-#include <TuiPlus/pic.h>
-#include <TuiPlus/process.h>
+#include <Tuix/timer.h>
+#include <Tuix/io.h>
+#include <Tuix/serial.h>
+#include <Tuix/pic.h>
+#include <Tuix/process.h>
 
 volatile uint32_t timer_ticks = 0;
 

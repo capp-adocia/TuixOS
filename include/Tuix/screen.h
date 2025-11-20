@@ -1,4 +1,4 @@
-/* include/TuiPlus/screen.h */
+/* include/Tuix/screen.h */
 
 #ifndef I_T_SCREEN_H
 #define I_T_SCREEN_H

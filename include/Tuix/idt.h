@@ -1,11 +1,11 @@
-/* include/TuiPlus/idt.h */
+/* include/Tuix/idt.h */
 
 #ifndef I_T_IDT_H
 #define I_T_IDT_H
 
 #include <stddef.h>
-#include <TuiPlus/isr.h>
-#include <TuiPlus/interrupts.h>
+#include <Tuix/isr.h>
+#include <Tuix/interrupts.h>
 
 /* 中断数量 */
 #define IDT_ITEM_NUM 256

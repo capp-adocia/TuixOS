@@ -1,11 +1,11 @@
-/* include/TuiPlus/process.h */
+/* include/Tuix/process.h */
 
 #ifndef I_T_PROCESS_H
 #define I_T_PROCESS_H
 
 #include <stddef.h>
-#include <TuiPlus/queue.h>
-#include <TuiPlus/interrupts_types.h>
+#include <Tuix/queue.h>
+#include <Tuix/interrupts_types.h>
 
 extern int task_started;
 

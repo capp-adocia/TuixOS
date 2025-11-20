@@ -1,7 +1,7 @@
 /* kernel/idt.c */
 
-#include <TuiPlus/idt.h>
-#include <TuiPlus/idt_list.h>
+#include <Tuix/idt.h>
+#include <Tuix/idt_list.h>
 
 struct idt_entry idt[IDT_ITEM_NUM];
 interrupt_handler_t interrupt_handlers[IDT_ITEM_NUM];

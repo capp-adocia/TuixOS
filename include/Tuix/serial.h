@@ -1,9 +1,9 @@
-/* include/TuiPlus/serial.h */
+/* include/Tuix/serial.h */
 
 #ifndef I_T_SERIAL_H
 #define I_T_SERIAL_H
 
-#include <TuiPlus/io.h>
+#include <Tuix/io.h>
 
 /**
  * 初始化串口
