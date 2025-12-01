@@ -1,0 +1,12 @@
+# 项目根目录的 .clangd
+CompileFlags:
+  Add: 
+    - "-I/home/capp-adocia/TuixOS"
+    - "-I/home/capp-adocia/TuixOS/include"
+    - "-std=gnu11"
+    - "-nostdlib"
+    - "-ffreestanding"
+    - "-xc"
+    - "-m32"
+    - "-fno-pie"
+

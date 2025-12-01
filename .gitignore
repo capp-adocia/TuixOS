@@ -5,3 +5,4 @@
 *.elf
 out/
 *.iso
+.vscode

@@ -12,7 +12,7 @@ SRC_DIRS = init mm lib boot kernel drivers
 
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-CFLAGS += -m32 -std=gnu99 -O1 -g -fno-pie -nostdinc
+CFLAGS += -m32 -std=gnu11 -O1 -g -fno-pie -nostdinc
 CFLAGS += -I include/
 CFLAGS += -Wall -Wextra -Wpedantic
 
