@@ -28,7 +28,7 @@ tmux send-keys -t "$SESSION":coding "cd $TUIXOS_PATH && nvim ." Enter
 # 创建右侧运行窗格(左90 右10 注意-p指的是新划分的窗口)
 tmux split-window -h -p 10 -t "$SESSION":coding -c "$TUIXOS_PATH" -d
 tmux send-keys -t "$SESSION":coding.1 'echo "[Run] 请运行: make clean && make run"' Enter
-tmux select-pane -t "$SESSION":coding.1
+tmux select-pane -t "$SESSION":coding.0
 
 # 创建构建调试窗口
 tmux new-window -t "$SESSION" -n build_debug -c "$TUIXOS_PATH" -d

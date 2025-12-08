@@ -4,7 +4,7 @@
 #define I_T_KEYBOARD_H
 
 #include <stddef.h>
-#include <Tuix/interrupts_types.h>
+#include <Tuix/ptrace.h>
 
 /**
  * 扫描码到字符的映射
@@ -14,8 +14,8 @@ char scancode_to_char(uint8_t scancode);
 
 /**
  * 中断处理函数
- * @param frame interrupt_frame结构体指针
+ * @param regs 中断帧数据
  */
-void keyboard_handler(struct interrupt_frame* frame);
+void keyboard_handler(struct pt_regs* regs);
 
 #endif

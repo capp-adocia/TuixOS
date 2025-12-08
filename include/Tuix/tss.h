@@ -4,6 +4,7 @@
 #define I_T_TSS_H
 
 #include <stddef.h>
+#include <Tuix/sysconf.h>
 
 struct tss_entry
 {
@@ -25,7 +26,8 @@ struct tss_entry
     uint16_t iomap_base;
 } __attribute__((packed));
 
-extern struct tss_entry tss;
+/* 每一个cpu核分配一个tss */
+extern struct tss_entry cpu_tss[MAX_CPUS];
 
 /**
  * 初始化tss

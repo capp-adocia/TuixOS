@@ -69,12 +69,13 @@ inline void register_interrupt_handler(uint8_t n, interrupt_handler_t handler)
 /**
  * 统一让isr跳转到这里查表
  */
+__attribute__((naked))
 void isr_common(void);
 
 /**
  * 分发函数
- * @param frame 栈帧指针
+ * @param 保存中断栈
  */
-void isr_handler(struct interrupt_frame* frame);
+void isr_handler(struct pt_regs* regs);
 
 #endif

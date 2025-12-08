@@ -1,5 +1,6 @@
 /* kernel/queue.c */
 
+#include <stddef.h>
 #include <Tuix/queue.h>
 
 void enqueue(struct queue* q, struct list_head* node)
@@ -54,3 +55,17 @@ void queue_init(struct queue* q)
 {
     if (q) { q->head = NULL;q->tail = NULL; }
 }
+
+bool check_queue_init(struct queue* q)
+{
+    if(q)
+    {
+        if(q->head == NULL && q->tail == NULL)
+            return true;
+        else
+           return false;
+    }
+    serial_printf("操作失败,指针不能为NULL\n");
+    return false;
+}
+

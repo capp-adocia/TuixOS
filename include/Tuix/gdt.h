@@ -3,8 +3,14 @@
 #ifndef I_T_GDT_H
 #define I_T_GDT_H
 
-#include <stddef.h>
 #include <Tuix/tss.h>
+
+#define KER_CS 0x08
+#define KER_DS 0x10
+#define USR_CS 0x18
+#define USR_DS 0x20
+/* 第0号cpu对应的tss */
+#define TSS_0_S  0x28
 
 struct gdt_entry
 {
@@ -21,7 +27,6 @@ struct gdt_ptr
     uint16_t limit;
     uint32_t base;
 } __attribute__((packed));
-
 
 /* NULL, 内核代码, 内核数据, 用户代码, 用户数据, TSS */
 extern struct gdt_entry gdt_entries[6];

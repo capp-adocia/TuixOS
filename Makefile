@@ -12,7 +12,7 @@ SRC_DIRS = init mm lib boot kernel drivers
 
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-CFLAGS += -m32 -std=gnu11 -O1 -g -fno-pie -nostdinc
+CFLAGS += -m32 -std=gnu11 -O1 -g -fno-pie -nostdinc -fno-omit-frame-pointer
 CFLAGS += -I include/
 CFLAGS += -Wall -Wextra -Wpedantic
 
@@ -56,7 +56,7 @@ $(KERNEL_ELF): $(ASM_OBJS) $(C_OBJS)
 # 运行和调试
 run: $(ISO_IMAGE)
 	@echo "[QEMU] 启动系统..."
-	qemu-system-i386 -m 128M -cdrom $(ISO_IMAGE) -serial stdio
+	qemu-system-i386 -m 128M -cdrom $(ISO_IMAGE) -serial stdio 2>&1 | tee ./log
 
 # 串口调试
 debug: $(ISO_IMAGE)

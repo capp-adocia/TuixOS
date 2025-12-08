@@ -4,7 +4,7 @@
 #define I_T_TIMER_H
 
 #include <stddef.h>
-#include <Tuix/interrupts_types.h>
+#include <Tuix/ptrace.h>
 
 extern volatile uint32_t timer_ticks;
 
@@ -16,8 +16,8 @@ void init_timer(uint32_t frequency);
 
 /**
  * 处理定时中断
- * @param frame interrupt_frame结构体指针
+ * @param regs 保存的中断帧数据
  */
-void timer_handler(struct interrupt_frame* frame);
+void timer_handler(struct pt_regs* regs);
 
 #endif

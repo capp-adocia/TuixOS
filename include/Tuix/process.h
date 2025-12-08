@@ -3,53 +3,63 @@
 #ifndef I_T_PROCESS_H
 #define I_T_PROCESS_H
 
-#include <stddef.h>
 #include <Tuix/queue.h>
-#include <Tuix/interrupts_types.h>
-
-extern int task_started;
+#include <Tuix/ptrace.h>
+#include <Tuix/sysconf.h>
 
 struct process_control_block
 {
     // 任务状态信息
-    uint32_t task_id;       // 任务ID
-    uint32_t task_state;    // 运行状态 就绪、运行、阻塞等
+    uint32_t id;       // 任务ID
+    uint8_t state;    // 运行状态 就绪、运行、阻塞等
     
-    // 需要保存的寄存器
-    uint32_t esp;
-    uint32_t eip;
-    uint32_t eflags;
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
-    uint32_t cs;
-    uint32_t ds;
-    uint32_t es;
-    uint32_t ss;
-    
+    // 寄存器上下文
+    struct cpu_context
+    {
+        uint32_t esp, eip, ebp;
+        uint32_t eax, ebx, ecx, edx;
+        uint32_t esi, edi;
+        uint32_t ds, es, fs, gs;
+    } ctx;
     // 调度信息
     uint32_t time_remaining;    // 剩余时间片
     uint32_t priority;          // 优先级
-    struct task_stack
+    // 栈
+    struct kernel_stack
     {
-        uint32_t *limit;        // 栈顶 低地址
-        uint32_t *start;        // 栈底 高地址，栈起始的地址
-        uint32_t *curr;  // 当前栈指针
-    } stack; // 进程对应的栈信息
+        uint32_t base;
+        uint32_t top;
+    } ustack, kstack; // 进程对应的用户栈以及内核栈信息
     
     struct list_head ready_node; // 就绪队列
 };
 // 就绪队列
 
+/* 任务数组 */
+extern struct process_control_block pcbs[MAX_TASKS];
 
 /**
- * 初始化一个任务
+ * 初始化任务
  */
 void init_task(void);
+
+/**
+ * 任务切换
+ * @param next 下一个任务
+ */
+void switch_to(struct process_control_block *next);
+
+/**
+ * 任务上下文切换
+ * @param prev 上一个任务
+ * @param next 下一个任务
+ */
+void context_switch(struct process_control_block *prev, struct process_control_block *next);
+
+/**
+ * 启动第一个任务
+ */
+void launch_first_task();
 
 /**
  * 设置pcb的数据
@@ -57,13 +67,6 @@ void init_task(void);
  * @param entry_point 任务的入口函数
  */
 void setup_task_context(struct process_control_block* pcb, void (*entry_point)());
-
-/**
- * 任务切换
- * @param old_esp 旧任务的栈指针
- * @param new_esp 新任务的栈指针
- */
-void switch_to(uint32_t* old_esp, uint32_t* new_esp);
 
 /**
  * 负责主动让出CPU
@@ -74,24 +77,6 @@ void yield(void);
  * 根据调度策略，选择下一个进程
  */
 void schedule(void);
-
-/**
- * 处理上下文切换(在协作式任务切换使用)
- * @param prev 旧进程的pcb
- */
-void context_switch(struct process_control_block* prev);
-
-/**
- * 保存中断帧信息到当前pcb中
- * @param frame 中断帧
- */
-void save_interrupt_frame(struct interrupt_frame* frame);
-
-/**
- * 将新调度进程的pcb写入中断帧
- * @param frame 中断帧
- */
-void restore_to_interrupt_frame(struct interrupt_frame* frame);
 
 /**
  * 测试：执行任务

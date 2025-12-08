@@ -1,50 +1,140 @@
-=== Multiboot2 信息解析 ===
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #1: 类型=0x15, 大小=12
-;   [未知Tag类型]
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #2: 类型=0x1, 大小=9
-;   [命令行] 
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #3: 类型=0x2, 大小=29
-;   [引导加载器] GRUB 2.06-2ubuntu7.2
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #4: 类型=0xa, 大小=28
-;   [未知Tag类型]
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-Tag #5: 类型=0x6, 大小=160 重要!!!
-  [内存映射信息]
-    条目大小: 24
-    条目版本: 0
-    条目0: 0x0 - 0x9fbff, 大小: 0 MB, 类型: 可用RAM
-    条目1: 0x9fc00 - 0x9ffff, 大小: 0 MB, 类型: 保留
-    条目2: 0xf0000 - 0xfffff, 大小: 0 MB, 类型: 保留
-    条目3: 0x100000 - 0x7fdffff, 大小: 126 MB, 类型: 可用RAM
-    条目4: 0x7fe0000 - 0x7ffffff, 大小: 0 MB, 类型: 保留
-    条目5: 0xfffc0000 - 0xffffffff, 大小: 0 MB, 类型: 保留
-    总可用内存: 127 MB
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #6: 类型=0x9, 大小=780
-;   [未知Tag类型]
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-Tag #7: 类型=0x4, 大小=16 重要!!
-  [基本内存信息]
-    低端内存(0-640KB): 639 KB
-    高端内存(1MB以上): 129920 KB
-    总内存: 130559 KB (127 MB)
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #8: 类型=0x5, 大小=20
-;   [未知Tag类型]
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #9: 类型=0x8, 大小=32
-;   [未知Tag类型]
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0
+=== Tuix OS 启动 ===
+Timer initialized with frequency: 20 Hz
+[Page] Simple identity mapping
 
-; Tag #10: 类型=0xe, 大小=28
-;   [未知Tag类型]
-
-=== 内存汇总信息 ===
-总物理内存: 127 MB
-总可用内存: 127 MB
-第一个可用地址: 0x100000
-最后一个可用地址: 0x7fe0000
-内存映射条目数: 6
+=== SAFE Memory Modification Test ===
+page_directory physical address: ~0x0x3e000
+✓ Can read/write page_directory via virtual address
+PDE[0] = 0x0xdeadbeef
+  Present: 1
+  RW: 1
+  User: 1
+Page table physical address: 0x0xdeadb000
+Trying to access page table at virtual 0x0xdeadb000
+✓ Can read from page table: 0x0x0

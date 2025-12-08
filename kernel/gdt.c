@@ -1,5 +1,6 @@
 /* kernel/gdt.c */
 
+#include "Tuix/sysconf.h"
 #include <Tuix/gdt.h>
 
 struct gdt_entry gdt_entries[6];
@@ -42,7 +43,7 @@ void init_gdt()
     gdt_entries[4].granularity = 0xCF;
     gdt_entries[4].base_high = 0x00;
 
-    set_tss_entry(5, (uint32_t)&tss, sizeof(struct tss_entry)-1, 0x89, 0x40);
+    set_tss_entry(5, (uint32_t)&cpu_tss[cpu_cur_id], sizeof(struct tss_entry)-1, 0x89, 0x40);
     
     // 设置好gdt的指针
     struct gdt_ptr gdt;
@@ -62,8 +63,8 @@ void init_gdt()
         : :"m"(gdt)
     );
     
-    /* 加载tss */
-    __asm__ volatile("ltr %%ax" : : "a" (0x28));
+    /* 设置tr寄存器指向tss位置0x28是tss的偏移位置 */
+    __asm__ volatile("ltr %%ax" : : "a" (TSS_0_S));
 }
 
 void set_tss_entry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity)
@@ -71,9 +72,7 @@ void set_tss_entry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8
     gdt_entries[num].base_low = (base & 0xFFFF);
     gdt_entries[num].base_middle = (base >> 16) & 0xFF;
     gdt_entries[num].base_high = (base >> 24) & 0xFF;
-    
     gdt_entries[num].limit_low = (limit & 0xFFFF);
     gdt_entries[num].granularity = ((limit >> 16) & 0x0F) | (granularity & 0xF0);
-    
     gdt_entries[num].access = access;
 }

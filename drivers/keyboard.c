@@ -4,6 +4,7 @@
 #include <Tuix/screen.h>
 #include <Tuix/io.h>
 #include <Tuix/serial.h>
+#include <Tuix/pic.h>
 
 char scancode_to_char(uint8_t scancode)
 {
@@ -72,7 +73,7 @@ char scancode_to_char(uint8_t scancode)
     }
 }
 
-void keyboard_handler(struct interrupt_frame* frame)
+void keyboard_handler(struct pt_regs* regs)
 {
     uint8_t scancode = inb(0x60);
     // 按下事件
@@ -91,5 +92,5 @@ void keyboard_handler(struct interrupt_frame* frame)
         // serial_printf("按键释放，扫描码:%x\n", press_code);
     }
     
-    send_eoi(frame->int_no);
+    send_eoi(regs->int_no);
 }

@@ -52,4 +52,10 @@ struct list_head* queue_peek(struct queue* q);
  */
 void queue_init(struct queue* q);
 
+/**
+ * 检查队列是否初始化
+ * @param q 队列指针
+ */
+bool check_queue_init(struct queue* q);
+
 #endif

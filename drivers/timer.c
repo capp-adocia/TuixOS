@@ -1,5 +1,6 @@
 /* driver/timer.c */
 
+#include "Tuix/ptrace.h"
 #include <Tuix/timer.h>
 #include <Tuix/io.h>
 #include <Tuix/serial.h>
@@ -36,7 +37,7 @@ void init_timer(uint32_t frequency)
 }
 
 // 每10ms强制切换进程
-void timer_handler(struct interrupt_frame* frame)
+void timer_handler(struct pt_regs* regs)
 {
     uint32_t current_esp;
     __asm__ volatile("mov %%esp, %0" : "=r"(current_esp));
@@ -44,16 +45,10 @@ void timer_handler(struct interrupt_frame* frame)
     serial_printf("current: %x \n", current_esp);
 
     timer_ticks++;
-    // if(timer_ticks % 100 == 0)
-        // serial_printf("Timer tick: %d\n", timer_ticks);
     
-    /* 保存当前上下文信息到旧pcb中 */
-    save_interrupt_frame(frame);
     /* 执行调度，选择一个新进程 */
     schedule();
-    /* 将新进程的数据保存到当前中断帧里 */
-    restore_to_interrupt_frame(frame);
 
     /* 此后，当前中断帧里保存的就是新pcb的数据 */
-    send_eoi(frame->int_no);
+    send_eoi(regs->int_no);
 }

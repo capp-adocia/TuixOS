@@ -1,8 +1,8 @@
 *.bin
 *.img
 *.o
-*.log
+log
 *.elf
 out/
 *.iso
-.vscode
+.vscode/
