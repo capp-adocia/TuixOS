@@ -39,15 +39,15 @@ void init_timer(uint32_t frequency)
 // 每10ms强制切换进程
 void timer_handler(struct pt_regs* regs)
 {
-    uint32_t current_esp;
-    __asm__ volatile("mov %%esp, %0" : "=r"(current_esp));
+    // uint32_t current_esp;
+    // __asm__ volatile("mov %%esp, %0" : "=r"(current_esp));
     
-    serial_printf("current: %x \n", current_esp);
+    // serial_printf("current: %x \n", current_esp);
 
     timer_ticks++;
     
     /* 执行调度，选择一个新进程 */
-    schedule();
+    // schedule();
 
     /* 此后，当前中断帧里保存的就是新pcb的数据 */
     send_eoi(regs->int_no);

@@ -169,7 +169,7 @@ int alloc_pages_discrete(uint32_t* page_array, size_t page_count)
     for (size_t i = 0; i < page_count; i++)
     {
         int error_code;
-        page_array[i] = alloc_page(&error_code);
+        page_array[i] = (uint32_t)alloc_page(&error_code);
         if (error_code < 0)
         {
             // 分配失败，释放已分配的页

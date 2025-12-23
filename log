@@ -1,140 +1,24 @@
 === Tuix OS 启动 ===
 Timer initialized with frequency: 20 Hz
 [Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
-=== Tuix OS 启动 ===
-Timer initialized with frequency: 20 Hz
-[Page] Simple identity mapping
-
-=== SAFE Memory Modification Test ===
-page_directory physical address: ~0x0x3e000
-✓ Can read/write page_directory via virtual address
-PDE[0] = 0x0xdeadbeef
-  Present: 1
-  RW: 1
-  User: 1
-Page table physical address: 0x0xdeadb000
-Trying to access page table at virtual 0x0xdeadb000
-✓ Can read from page table: 0x0x0
+任务开始，这里手动调用一次...
+切换到用户态准备执行第一个任务...
+Error Code: 0x0
+Page Fault: 权限错误 0x17b6a - Halting
+  P=0 (Page Not Present)
+  W/R=0 (Read operation)
+  U/S=0 (Supervisor mode)
+  RSVD=0 (Reserved bit OK)
+  I/D=0 (Data fetch)
+Current CS: 0x8, CPL=0
+Page Table Entry: PDE[0] PTE[23]
+CR3: 0x49000
+Current CR3: 0x49000
+页目录第[0]项: 页目录项的内容0x21
+  PDE Present: 1
+页表第[23]项: 页表项的内容0x17027
+  PTE Present: 1
+  PTE User: 1
+  Maps to phys: 0x17000
+!!! TLB INCONSISTENCY !!!
+PTE says Present=1, but CPU got P=0

@@ -94,39 +94,51 @@ void launch_first_task()
 {
     // 首次执行先调度一次
     schedule();
-    // 从内核切换到第一个任务，后续任务切换进行
+    // 这里额外设置一次，从内核切换到第一个任务，后续任务切换进行
     cpu_tss[cpu_cur_id].esp0 = pcb_curr->kstack.top;
     
     serial_printf("切换到用户态准备执行第一个任务...\n");
 
     __asm__ volatile(
-        "mov %0, %%esp\n"
+        "pushl $0x23\n"          // SS (用户数据段)
+        "pushl %0\n"             // ESP (用户栈指针)
+        "pushl $0x202\n"         // EFLAGS (IF=1)
+        "pushl $0x1B\n"          // CS (用户代码段)
+        "pushl %1\n"             // EIP (任务入口)
+        
+        // 设置段寄存器
+        "mov $0x23, %%ax\n"
+        "mov %%ax, %%ds\n"
+        "mov %%ax, %%es\n"
+        "mov %%ax, %%fs\n"
+        "mov %%ax, %%gs\n"
+        
+        // 切换到用户态
         "iret\n"
-        : : "r"(pcb_curr->ctx.esp)
-        : "memory"
-    );
-}
+        : 
+        : "r"(pcb_curr->ctx.esp),  // 用户栈
+          "r"(pcb_curr->ctx.eip)   // 任务入口
+        : "eax", "memory"
+    );}
 
 void setup_task_context(struct process_control_block* pcb, void (*entry_point)())
-{
-    uint32_t* esp = (uint32_t*)pcb->kstack.top;
-    // 设置任务栈的数据
-    *--esp = 0x23;                   // SS
-    --esp; *esp = pcb->ustack.top;   // ESP
-    *--esp = 0x202;                  // EFLAGS
-    *--esp = 0x1B;                   // CS
-    *--esp = (uint32_t)entry_point;  // EIP
-
-    // 设置task的esp指向entry_point
+{   
+    uint32_t* uesp = (uint32_t*)pcb->ustack.top;
+    pcb->ctx.esp = (uint32_t)uesp;  // 用户栈指针
     pcb->ctx.eip = (uint32_t)entry_point;
-    pcb->ctx.esp = (uint32_t)esp;   // 实际的栈指针
+    
     pcb->ctx.eax = 0;
     pcb->ctx.ecx = 0;
-    pcb->ctx.edi = 0;
+    pcb->ctx.edx = 0;
     pcb->ctx.ebx = 0;
     pcb->ctx.ebp = 0;
     pcb->ctx.esi = 0;
-    pcb->ctx.edx = 0;
+    pcb->ctx.edi = 0;
+    pcb->ctx.ds = 0x23;
+    pcb->ctx.es = 0x23;
+    pcb->ctx.fs = 0;
+    pcb->ctx.gs = 0;
+    pcb->ctx.eflags = 0x202;
 }
 
 // 当进程使用了yield表示这个线程主动释放了cpu使用权，那么此时应该把它加入就绪队列，并从就绪队列中取出一个新任务
@@ -164,7 +176,7 @@ void task_A(void)
 {
     /* 启用定时器中断，注意在进入第一个任务时启用 */
     // enable_irq(IRQ_TIMER);
-    // __asm__ volatile("sti");
+    __asm__ volatile("sti");
 
     volatile int count = 0;
     while (1)

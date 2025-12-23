@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SESSION="TuixOS_dev"
-TUIXOS_PATH="$HOME/TuixOS"
+TUIXOS_PATH="$(pwd)"
 
 # 检查 TuixOS 目录是否存在
 if [ ! -d "$TUIXOS_PATH" ]; then

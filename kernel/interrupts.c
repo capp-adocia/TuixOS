@@ -159,11 +159,7 @@ void isr_page_fault_handler(struct pt_regs* regs)
     __asm__ volatile("mov %%cs, %0" : "=r"(cs));
     serial_printf("Current CS: %x, CPL=%d\n", cs, cs & 0x3);
     
-    // 获取EIP
-    uint32_t eip;
-    __asm__ volatile("call 1f\n1: pop %0" : "=r"(eip));
-    serial_printf("Faulting EIP: %x\n", eip);
-    
+    fault_addr = 0x17b7a;
     // 检查页表项
     uint32_t pde_index = fault_addr >> 22;
     uint32_t pt_index = (fault_addr >> 12) & 0x3FF;
@@ -175,35 +171,29 @@ void isr_page_fault_handler(struct pt_regs* regs)
     __asm__ volatile("mov %%cr3, %0" : "=r"(cr3));
     serial_printf("CR3: %x\n", cr3);
     
-    // 如果U/S=0，说明是权限问题
-    if ((regs->err_code & 0x4) == 0) {
-        serial_printf("\n!!! CONFIRMED: User-mode access to supervisor page !!!\n");
-        serial_printf("You need to set U/S=1 in page table for address %x\n", fault_addr);
-    }
-    
     // 检查当前 CR3
     uint32_t cr3_val;
     __asm__ volatile("mov %%cr3, %0" : "=r"(cr3_val));
-    serial_printf("Current CR3: 0x%x\n", cr3_val);
+    serial_printf("Current CR3: %x\n", cr3_val);
     
     // 检查页表项
-    uint32_t pd_idx = fault_addr >> 22;
-    uint32_t pt_idx = (fault_addr >> 12) & 0x3FF;
+    uint32_t pd_idx = fault_addr >> 22; // 页目录索引
+    uint32_t pt_idx = (fault_addr >> 12) & 0x3FF; // 页表项索引
     
-    uint32_t* page_dir = (uint32_t*)cr3_val;
-    uint32_t pde = page_dir[pd_idx];
+    uint32_t* page_dir = (uint32_t*)cr3_val; // 页目录基址
+    uint32_t pde = page_dir[pd_idx]; // 目标页表的基址
     
-    serial_printf("PDE[%d]: 0x%x\n", pd_idx, pde);
+    serial_printf("页目录第[%d]项: 页目录项的内容%x\n", pd_idx, pde);
     serial_printf("  PDE Present: %d\n", (pde >> 0) & 1);
     
     if (pde & 0x1) {
         uint32_t* page_table = (uint32_t*)(pde & 0xFFFFF000);
         uint32_t pte = page_table[pt_idx];
         
-        serial_printf("PTE[%d]: 0x%x\n", pt_idx, pte);
+        serial_printf("页表第[%d]项: 页表项的内容%x\n", pt_idx, pte);
         serial_printf("  PTE Present: %d\n", (pte >> 0) & 1);
         serial_printf("  PTE User: %d\n", (pte >> 2) & 1);
-        serial_printf("  Maps to phys: 0x%x\n", pte & 0xFFFFF000);
+        serial_printf("  Maps to phys: %x\n", pte & 0xFFFFF000);
         
         // 如果 PTE 显示 Present=1，但 CPU 说 P=0，说明是 TLB 问题
         if ((pte & 0x1) && !(regs->err_code & 0x1)) {

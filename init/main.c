@@ -79,10 +79,8 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_timer(20);
     /* 启用分页 */
     init_page();
-    /* 开启中断 */
-    __asm__ volatile("sti");
     /* 启用键盘中断 */
-    init_keyboard_system();
+    // init_keyboard_system();
     /* 初始化任务 */
     init_task();
     /* 启动系统第一个任务 */

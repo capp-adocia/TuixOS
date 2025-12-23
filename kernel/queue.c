@@ -7,7 +7,7 @@ void enqueue(struct queue* q, struct list_head* node)
 {
     if(!q || !node)
     {
-        serial_printf("操作失败,指针不能为NULL\n");
+        serial_printf("enqueue操作失败,指针不能为NULL\n");
         return;
     }
     node->next = NULL;
@@ -25,7 +25,7 @@ struct list_head* dequeue(struct queue* q)
 {
     if(!q || !q->head)
     {
-        serial_printf("操作失败,指针不能为NULL\n");
+        serial_printf("dequeue操作失败,指针不能为NULL\n");
         return NULL;
     }
     
@@ -65,7 +65,7 @@ bool check_queue_init(struct queue* q)
         else
            return false;
     }
-    serial_printf("操作失败,指针不能为NULL\n");
+    serial_printf("queue_init操作失败,指针不能为NULL\n");
     return false;
 }
 

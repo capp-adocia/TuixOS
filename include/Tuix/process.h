@@ -20,6 +20,7 @@ struct process_control_block
         uint32_t eax, ebx, ecx, edx;
         uint32_t esi, edi;
         uint32_t ds, es, fs, gs;
+        uint32_t eflags;
     } ctx;
     // 调度信息
     uint32_t time_remaining;    // 剩余时间片

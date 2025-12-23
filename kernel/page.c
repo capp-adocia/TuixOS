@@ -22,18 +22,17 @@ void init_page(void)
         
         for (int pt_index = 0; pt_index < PTE_NUM; pt_index++)
         {
-            // 简单的：虚拟地址 = 物理地址
             uint32_t virtual_addr = (pd_index << 22) | (pt_index << 12);
             uint32_t physical_addr = virtual_addr;
             
-            // 所有页面用户可访问（调试）
             uint32_t flags = PRESENT_BIT | USER_BIT | READ_WRITE_BIT;
             
             new_pt[pt_index] = physical_addr | flags;
         }
     }
+    
     // 设置内核页保护
-    setup_kernel_page_protection();
+    // setup_kernel_page_protection();
     
     // 设置CR3寄存器指向页目录
     enable_paging();
@@ -42,14 +41,16 @@ void init_page(void)
 uint32_t* create_page_table(uint32_t pd_index)
 {
     int error_code;
-    uint32_t* new_pt = alloc_page(&error_code);
+    uint32_t* phys_addr = alloc_page(&error_code);
     if (error_code < 0)
     {
         serial_printf("创建页表失败: pd_index=%d, error=%d\n", pd_index, error_code);
         return NULL;
     }
-    page_directory[pd_index] = (uint32_t)new_pt | PRESENT_BIT;
-    return new_pt;
+    uint32_t* virtual_addr = phys_addr;
+    page_directory[pd_index] = (uint32_t)phys_addr | PRESENT_BIT;
+
+    return virtual_addr;
 }
 
 uint32_t* get_page_table(uint32_t virtual_addr)
@@ -99,82 +100,20 @@ void setup_kernel_page_protection(void)
 void enable_paging(void)
 {
     uint32_t pd_physical = (uint32_t)page_directory;
-    // 将CR3指向页目录物理地址
     __asm__ volatile("mov %0, %%cr3" : : "r"(pd_physical));
     // 设置CRO.PG位启动分页
     __asm__ volatile(
         "mov %%cr0, %%eax\n"
-        "or $0x80000000, %%eax\n" // 设置PG位
+        "or $0x80000001, %%eax\n" // 设置PG位
         "mov %%eax, %%cr0\n"
         : : : "eax"
     );
     // 刷新TLB
-    __asm__ volatile("mov %%cr3, %%eax; mov %%eax, %%cr3" ::: "eax");
-    // serial_printf("\n=== Verifying Critical Mappings ===\n");
-    //
-    // // 重要地址列表
-    // struct {
-    //     uint32_t vaddr;
-    //     const char* name;
-    //     uint32_t expected_phys;
-    // } checks[] = {
-    //     {0x10020, ".text start", 0x10020},
-    //     {0x140eb, "kernel_main", 0x140eb},
-    //     {0x17e86, "task_A", 0x17e86},
-    //     {0x17000, "task_A page", 0x17000},
-    // };
-    //
-    // for (int i = 0; i < 4; i++) {
-    //     uint32_t vaddr = checks[i].vaddr;
-    //     uint32_t page = vaddr & 0xFFFFF000;
-    //     uint32_t pd_idx = page >> 22;
-    //     uint32_t pt_idx = (page >> 12) & 0x3FF;
-    //
-    //     uint32_t* page_dir = (uint32_t*)page_directory;
-    //     uint32_t pde = page_dir[pd_idx];
-    //
-    //     serial_printf("\n%s (0x%x):\n", checks[i].name, vaddr);
-    //
-    //     if (pde & 0x1) {
-    //         uint32_t* page_table = (uint32_t*)(pde & 0xFFFFF000);
-    //         uint32_t pte = page_table[pt_idx];
-    //         uint32_t mapped_phys = pte & 0xFFFFF000;
-    //
-    //         serial_printf("  Maps to: 0x%x\n", mapped_phys);
-    //         serial_printf("  Expected: 0x%x\n", checks[i].expected_phys & 0xFFFFF000);
-    //         serial_printf("  PTE: 0x%x (P=%d, U/S=%d)\n", 
-    //                      pte, (pte>>0)&1, (pte>>2)&1);
-    //
-    //         if (mapped_phys == (checks[i].expected_phys & 0xFFFFF000)) {
-    //             serial_printf("  ✓ Mapping correct\n");
-    //         } else {
-    //             serial_printf("  ✗ Mapping wrong!\n");
-    //         }
-    //     } else {
-    //         serial_printf("  ✗ Page table not present!\n");
-    //     }
-    // }
-    
-    // uint32_t mapped_pages = 0;
-    // uint32_t max_mapped_addr = 0;
-    //
-    // for (uint32_t i = 0; i < 1024; i++)
-    // {
-    //     if (page_directory[i] & PRESENT_BIT)
-    //     {
-    //         // 这个页目录项有效，映射了4MB区域
-    //         uint32_t region_start = i * 4 * 1024 * 1024;  // 每个PDE映射4MB
-    //         uint32_t region_end = region_start + 4 * 1024 * 1024 - 1;
-    //
-    //         serial_printf("PDE[%d]: 映射 0x%x - 0x%x\n", i, region_start, region_end);
-    //
-    //         mapped_pages += 1024;  // 每个页表有1024个页面
-    //         max_mapped_addr = region_end;
-    //     }
-    // }
-    //
-    // serial_printf("总计: %d 页 (%d MB)\n", mapped_pages, mapped_pages * 4 / 1024);
-    // serial_printf("最大映射地址: 0x%x\n", max_mapped_addr);
+    __asm__ volatile(
+        "mov %%cr3, %%eax\n"
+        "mov %%eax, %%cr3\n"
+        ::: "eax"
+    );
 }
 
 void unmap_page(uint32_t virtual_addr)

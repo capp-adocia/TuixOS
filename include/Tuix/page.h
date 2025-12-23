@@ -17,6 +17,16 @@
 // 页目录数组
 extern uint32_t page_directory[1024] __attribute__((aligned(4096)));
 
+
+/**
+ * 获取CR3
+ * @return 页目录基址
+ */
+inline uint32_t* get_cr3()
+{
+    return page_directory;
+}
+
 /**
  * 启用分页
  */
