@@ -28,7 +28,7 @@ void parse_multiboot2_info(uint32_t magic, uint32_t addr)
     //遍历所有Tag
     struct multiboot_tag* tag = (struct multiboot_tag*)(addr + 8);
     int tag_count = 0;
-    
+
     while (tag->type != MULTIBOOT_TAG_TYPE_END)
     {
         tag_count++;

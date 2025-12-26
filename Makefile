@@ -1,7 +1,7 @@
 # Makefile
 
 # 工具链配置
-CC = gcc
+CC = gcc-11
 LD = ld
 NASM = nasm
 
@@ -12,7 +12,7 @@ SRC_DIRS = init mm lib boot kernel drivers
 
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-CFLAGS += -m32 -std=gnu11 -O1 -g -fno-pie -nostdinc -fno-omit-frame-pointer
+CFLAGS += -m32 -std=gnu11 -O1 -g -fno-pie -nostdinc -fno-omit-frame-pointer -fno-stack-protector 
 CFLAGS += -I include/
 CFLAGS += -Wall -Wextra -Wpedantic
 
