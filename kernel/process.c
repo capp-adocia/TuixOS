@@ -119,7 +119,8 @@ void launch_first_task()
         : "r"(pcb_curr->ctx.esp),  // 用户栈
           "r"(pcb_curr->ctx.eip)   // 任务入口
         : "eax", "memory"
-    );}
+    );
+}
 
 void setup_task_context(struct process_control_block* pcb, void (*entry_point)())
 {   

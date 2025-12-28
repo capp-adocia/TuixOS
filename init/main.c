@@ -57,7 +57,6 @@ void init_keyboard_system(void)
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr)
 {
-    __asm__ volatile("cli");
     /* 初始化串口 */
     init_serial();
     /* 基础显示 */
@@ -79,15 +78,15 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_timer(20);
     /* 启用分页 */
     init_page();
-    /* 启用键盘中断 */
+    // /* 启用键盘中断 */
     // init_keyboard_system();
-    /* 初始化任务 */
-    init_task();
-    /* 启动系统第一个任务 */
-    serial_printf("任务开始，这里手动调用一次...\n");
-    // 这里先手动调用一次放入第一个任务到就绪队列中，然后运行第一个任务
-    launch_first_task();
-    serial_printf("任务结束，已经返回内核\n");
+    // /* 初始化任务 */
+    // init_task();
+    // /* 启动系统第一个任务 */
+    // serial_printf("任务开始，这里手动调用一次...\n");
+    // // 这里先手动调用一次放入第一个任务到就绪队列中，然后运行第一个任务
+    // launch_first_task();
+    // serial_printf("任务结束，已经返回内核\n");
 
     while (1) { __asm__ volatile("hlt"); }
 }

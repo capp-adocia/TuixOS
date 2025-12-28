@@ -1,24 +1,7 @@
+
+(qemu-system-i386:32290): Gtk-WARNING **: 20:28:41.171: Failed to parse /home/sl/.config/gtk-3.0/settings.ini: Key file does not have group “Settings”
 === Tuix OS 启动 ===
 Timer initialized with frequency: 20 Hz
 [Page] Simple identity mapping
-任务开始，这里手动调用一次...
-切换到用户态准备执行第一个任务...
-Error Code: 0x0
-Page Fault: 权限错误 0x161ad - Halting
-  P=0 (Page Not Present)
-  W/R=0 (Read operation)
-  U/S=0 (Supervisor mode)
-  RSVD=0 (Reserved bit OK)
-  I/D=0 (Data fetch)
-Current CS: 0x8, CPL=0
-Page Table Entry: PDE[0] PTE[23]
-CR3: 0x48000
-Current CR3: 0x48000
-页目录第[0]项: 页目录项的内容0x21
-  PDE Present: 1
-页表第[23]项: 页表项的内容0x17027
-  PTE Present: 1
-  PTE User: 1
-  Maps to phys: 0x17000
-!!! TLB INCONSISTENCY !!!
-PTE says Present=1, but CPU got P=0
+General Protection Fault! Error: 0x0
+System Halted

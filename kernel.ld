@@ -3,10 +3,10 @@ ENTRY(_start)
 
 SECTIONS
 {
-    _kernel_start = 0x10000;          /* 内核加载地址 */
+    _kernel_start = 0x80100000;     /* 内核加载到的虚拟地址 */
     . = _kernel_start;
     
-    .multiboot_header : {
+    .multiboot_header : AT(0x100000) {
         *(.multiboot_header)
     }
 

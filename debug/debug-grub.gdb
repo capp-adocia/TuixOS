@@ -18,4 +18,4 @@ winheight regs -5
 focus src
 
 echo "=== 开始执行 ===\n"
-continue
+# continue
