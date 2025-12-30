@@ -1,5 +1,3 @@
-
-(qemu-system-i386:32290): Gtk-WARNING **: 20:28:41.171: Failed to parse /home/sl/.config/gtk-3.0/settings.ini: Key file does not have group “Settings”
 === Tuix OS 启动 ===
 Timer initialized with frequency: 20 Hz
 [Page] Simple identity mapping

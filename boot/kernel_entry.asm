@@ -1,12 +1,13 @@
 ; boot/kernel_entry.asm 使用GRUB加载
 
-section .text
-global _start
-extern kernel_main
-
 %define KERNBASE 0x80000000
 %define KERN_ST_PHYS (kernel_stack_top - KERNBASE)
 %define ENTRYPGDIR_PHYS (entrypgdir - KERNBASE)
+
+section .text
+global _start
+_start equ entry - KERNBASE
+extern kernel_main
 
 section .multiboot_header
 header_start:
@@ -23,11 +24,11 @@ header_end:
 
 ; 内核真正入口
 section .text
-_start:
+global entry
+entry:
     ; 保存一下这些信息以免被破坏
-    mov esp, KERN_ST_PHYS
-    push ebx ; multiboot_info 结构指针
-    push eax ; magic number
+    mov esi, eax            ; esi = magic
+    mov edi, ebx            ; edi = multiboot_info
     ; 首先先开启分页，设置4MB
     ; 设置双重映射，保证后续代码仍能正常取指令
     mov eax, cr4
@@ -40,8 +41,13 @@ _start:
     mov eax, cr0
     or eax, 0x80010000
     mov cr0, eax
-    ; 以下是设置栈指针+调用内核main()
-    call kernel_main
+    mov esp, kernel_stack_top
+    push edi
+    push esi
+    push 0
+    ; 以下是设置调用内核main() 小心这里千万不能用call,必须要jmp,因为call是相对跳转,而jmp是按绝对地址跳转
+    mov ecx, kernel_main
+    jmp ecx
     cli
     
 .hang:

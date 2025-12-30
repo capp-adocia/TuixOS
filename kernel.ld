@@ -1,5 +1,5 @@
 /* kernel.ld */
-ENTRY(_start)
+ENTRY(entry)
 
 SECTIONS
 {

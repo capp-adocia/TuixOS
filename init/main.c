@@ -78,7 +78,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_timer(20);
     /* 启用分页 */
     init_page();
-    // /* 启用键盘中断 */
+    /* 启用键盘中断 */
     // init_keyboard_system();
     // /* 初始化任务 */
     // init_task();
