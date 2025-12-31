@@ -41,6 +41,7 @@ entry:
     mov eax, cr0
     or eax, 0x80010000
     mov cr0, eax
+    ; 在栈上传递参数
     mov esp, kernel_stack_top
     push edi
     push esi

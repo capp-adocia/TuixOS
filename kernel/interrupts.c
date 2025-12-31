@@ -36,6 +36,9 @@ void isr_debug_exception_handler(struct pt_regs* regs)
 {
     serial_printf("Debug Exception at EIP: %x - Continue\n", regs->eip);
     // 单步执行，继续
+    while (1) {
+        __asm__ volatile ("cli; hlt");
+    }
 }
 
 // 2: 非屏蔽中断 - 严重硬件错误

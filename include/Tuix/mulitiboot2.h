@@ -93,9 +93,6 @@ struct system_memory_info
     uint32_t kbss_end_addr;         // 内核bss结束地址
     uint32_t kernel_end_addr;       // 内核结束地址
 
-    uint32_t memory_bitmap_addr;    // 内存位图物理地址
-    uint32_t memory_bitmap_size;    // 内存位图大小(字节)
-    
     // 基本内存信息
     uint32_t mem_lower;             // 0-640KB内存(KB)
     uint32_t mem_upper;             // 1MB以上内存(KB)

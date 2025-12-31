@@ -1,9 +1,10 @@
 /* init/main.c 实现C内核 */
 #include <Tuix/gdt.h>
 #include <Tuix/idt.h>
-#include <Tuix/memory.h>
+#include <Tuix/kalloc.h>
+#include <Tuix/mmu.h>
+#include <Tuix/vm.h>
 #include <Tuix/mulitiboot2.h>
-#include <Tuix/page.h>
 #include <Tuix/pic.h>
 #include <Tuix/process.h>
 #include <Tuix/screen.h>
@@ -68,19 +69,17 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     /* 设置好gdt表项 */
     init_gdt();
     /* 内存初始化 */
-    init_physical_memory();
-    /* 初始化堆，必须在内核初始化后做 */
-    init_kernel_heap();
+    init_physical_memory((uint32_t*)mem_info.kernel_end_addr, P2V(4*1024*1024));
+    /* 分配内核页表 */
+    init_kvm();
     /* 初始化pic和idt表 */
     init_pic();
-    init_idt();
-    /* 初始化定时器 */
-    init_timer(20);
-    /* 启用分页 */
-    init_page();
-    /* 启用键盘中断 */
+    // init_idt();
+    // /* 初始化定时器 */
+    // init_timer(20);
+    // /* 启用键盘中断 */
     // init_keyboard_system();
-    // /* 初始化任务 */
+    /* 初始化任务 */
     // init_task();
     // /* 启动系统第一个任务 */
     // serial_printf("任务开始，这里手动调用一次...\n");
