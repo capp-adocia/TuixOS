@@ -1,6 +1,8 @@
 /* driver/screen.c */
 
+#include "Tuix/mmu.h"
 #include <Tuix/screen.h>
+#include <Tuix/vm.h>
 
 void put_char(const char c, int row, int col)
 {
@@ -8,7 +10,7 @@ void put_char(const char c, int row, int col)
     {
         return; // 忽略越界访问
     }
-    char *video = (char *)0xB8000 + (row * 80 + col) * 2;
+    char *video = P2V((char *)0xB8000) + (row * 80 + col) * 2;
     video[0] = c;
     video[1] = 0x0E;
 }

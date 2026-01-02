@@ -1,12 +1,8 @@
 ; boot/kernel_entry.asm 使用GRUB加载
 
 %define KERNBASE 0x80000000
-%define KERN_ST_PHYS (kernel_stack_top - KERNBASE)
 %define ENTRYPGDIR_PHYS (entrypgdir - KERNBASE)
 
-section .text
-global _start
-_start equ entry - KERNBASE
 extern kernel_main
 
 section .multiboot_header
@@ -24,8 +20,8 @@ header_end:
 
 ; 内核真正入口
 section .text
-global entry
-entry:
+global _start
+_start:
     ; 保存一下这些信息以免被破坏
     mov esi, eax            ; esi = magic
     mov edi, ebx            ; edi = multiboot_info
@@ -42,7 +38,7 @@ entry:
     or eax, 0x80010000
     mov cr0, eax
     ; 在栈上传递参数
-    mov esp, kernel_stack_top
+    mov esp, boot_stack_top
     push edi
     push esi
     push 0
@@ -50,17 +46,10 @@ entry:
     mov ecx, kernel_main
     jmp ecx
     cli
-    
+
 .hang:
     hlt
     jmp .hang
-
-; 内核栈空间
-align 16
-global kernel_stack_top
-kernel_stack_bottom:
-    resb 16384 ; 16KB
-kernel_stack_top:
 
 ; 定义临时页表
 section .data
@@ -77,3 +66,14 @@ entrypgdir:
 ;   [0] = (0) | PTE_P | PTE_W | PTE_PS,
 ;   [KERNBASE>>PDXSHIFT] = (0) | PTE_P | PTE_W | PTE_PS,
 ; };
+
+; 内核栈空间放在bss段中，注意不要放错到text段中了
+section .bss
+align 16
+
+global boot_stack
+global boot_stack_top
+
+boot_stack:
+    resb 16384
+boot_stack_top:

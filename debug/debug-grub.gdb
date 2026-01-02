@@ -9,6 +9,7 @@ file out/Tuix.kernel
 
 echo "=== 设置断点 ===\n"
 break kernel_main
+break init_kvm
 
 # TUI 布局
 tui enable

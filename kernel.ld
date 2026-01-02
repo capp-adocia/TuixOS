@@ -1,5 +1,5 @@
 /* kernel.ld */
-ENTRY(entry)
+ENTRY(_start) /* 内核程序开始执行的入口地址 */
 
 SECTIONS
 {
@@ -23,7 +23,7 @@ SECTIONS
         *(.rodata.*)
         _kernel_rodata_end = .;
     }
-    
+    . = ALIGN(0x1000);
     .data : {
         _kernel_data_start = .;
         *(.data)

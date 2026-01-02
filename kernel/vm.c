@@ -59,7 +59,7 @@ pte_t* walk_pgdir(pde_t* pgdir, const void* va, int alloc)
         memset(pgtab, 0, PGSIZE);
         // 设置页目录项，指向新页表
         // V2P(pgtab): 将页表虚拟地址转为物理地址
-        *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
+        *pde = V2P(pgtab) | PTE_P | PTE_W;
     }
     return &pgtab[PTX(va)];
 }
@@ -69,6 +69,17 @@ void init_kvm(void)
     init_kmappings();
     kpgdir = setup_kvm(); // 创建kvm
     asm volatile("movl %0,%%cr3" : : "r" (V2P(kpgdir)));
+
+    // 检查 0x80107cce 的 PTE
+    volatile uint32_t va = 0x80107cce;
+    volatile pde_t* pde = &kpgdir[PDX(va)];
+
+    if((*pde) & PTE_P)
+    {
+        volatile pte_t* pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
+        volatile pte_t* pte = &pgtab[PTX(va)];
+    }
+
 }
 
 void init_kmappings(void)
@@ -112,6 +123,7 @@ pde_t* setup_kvm(void)
     {
         int erro = map_pages(pgdir, k_maps[i].virt, k_maps[i].phys_end - k_maps[i].phys_start,
                 k_maps[i].phys_start, k_maps[i].perm);
+        // serial_printf("k_maps[%d],物理起始地址：%x, 物理结束地址:%x \n", i, k_maps[i].phys_start, k_maps[i].phys_end);
         if(erro < 0)
         {
             PANIC("setup_kvm: map_pages映射出错");

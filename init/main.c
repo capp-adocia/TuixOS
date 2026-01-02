@@ -53,7 +53,7 @@ void init_keyboard_system(void)
     enable_irq(IRQ_KEYBOARD); // 启用键盘
     // 3. 全局启用中断
     __asm__ volatile("sti");
-    kprint(11, 0, "Keyboard system ready...");
+    kprint(5, 0, "Keyboard system ready...");
 }
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr)
@@ -73,17 +73,17 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     /* 分配内核页表 */
     init_kvm();
     /* 初始化pic和idt表 */
-    init_pic();
+    // init_pic();
     // init_idt();
-    // /* 初始化定时器 */
+    /* 初始化定时器 */
     // init_timer(20);
-    // /* 启用键盘中断 */
+    /* 启用键盘中断 */
     // init_keyboard_system();
     /* 初始化任务 */
     // init_task();
-    // /* 启动系统第一个任务 */
+    /* 启动系统第一个任务 */
     // serial_printf("任务开始，这里手动调用一次...\n");
-    // // 这里先手动调用一次放入第一个任务到就绪队列中，然后运行第一个任务
+    // 这里先手动调用一次放入第一个任务到就绪队列中，然后运行第一个任务
     // launch_first_task();
     // serial_printf("任务结束，已经返回内核\n");
 

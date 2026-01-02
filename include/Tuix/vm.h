@@ -35,7 +35,8 @@ void init_kvm(void);
 void init_kmappings(void);
 
 /**
- * 创建页表
+ * 创建页表，设置页目录项+页表项
+ * @parma 返回页目录地址
  */
 pde_t* setup_kvm(void);
 
