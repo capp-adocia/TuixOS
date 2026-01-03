@@ -114,3 +114,27 @@ void reverse_str(char* str)
         str[len - 1 - i] = temp;
     }
 }
+
+char* strcpy(char* dst, const char* src)
+{
+    char *os;
+
+    os = dst;
+    while((*dst++ = *src++) != 0)
+        ;
+    return os;
+}
+
+char* strncpy(char* dst, const char* src, size_t n)
+{
+    char *d = dst;
+    const char *s = src;
+    
+    while (n-- && (*d++ = *s++))
+        ;
+    
+    while (n--)
+        *d++ = '\0';
+    
+    return dst;
+}

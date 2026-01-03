@@ -8,8 +8,7 @@ echo "=== 加载C内核调试信息 ===\n"
 file out/Tuix.kernel
 
 echo "=== 设置断点 ===\n"
-break kernel_main
-break init_kvm
+break init_user
 
 # TUI 布局
 tui enable

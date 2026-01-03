@@ -1,5 +1,6 @@
 /* kernel/vm.c */
 
+#include <Tuix/sysconf.h>
 #include <Tuix/panic.h>
 #include <Tuix/serial.h>
 #include <Tuix/mmu.h>
@@ -8,6 +9,9 @@
 #include <Tuix/kalloc.h>
 #include <string.h>
 #include <Tuix/mulitiboot2.h>
+#include <Tuix/gdt.h>
+#include <Tuix/process.h>
+
 
 pde_t* kpgdir;
 
@@ -28,7 +32,7 @@ static int map_pages(pde_t* pgdir, void* va, uint32_t size, uint32_t pa, int per
             return -1;
         if(*pte & PTE_P)
             PANIC("映射到重复的空间了!");
-        *pte = pa | perm | PTE_P;
+        *pte = pa | perm | PTE_P; // 注意这里不要加入U位，用户不应当直接访问内核
         if(start == last)
             break;
         // 虚拟地址和物理地址要同步更新
@@ -68,18 +72,7 @@ void init_kvm(void)
 {
     init_kmappings();
     kpgdir = setup_kvm(); // 创建kvm
-    asm volatile("movl %0,%%cr3" : : "r" (V2P(kpgdir)));
-
-    // 检查 0x80107cce 的 PTE
-    volatile uint32_t va = 0x80107cce;
-    volatile pde_t* pde = &kpgdir[PDX(va)];
-
-    if((*pde) & PTE_P)
-    {
-        volatile pte_t* pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
-        volatile pte_t* pte = &pgtab[PTX(va)];
-    }
-
+    lcr3(V2P(kpgdir)); // 切换到内核页基址
 }
 
 void init_kmappings(void)
@@ -100,7 +93,7 @@ void init_kmappings(void)
     k_maps[2].virt = (void*)mem_info.kdata_start_addr;
     k_maps[2].phys_start = V2P(mem_info.kdata_start_addr);
     // TODO:后续需要动态获取到物理内存的最后
-    k_maps[2].phys_end = 0xE000000;
+    k_maps[2].phys_end = PHYSTOP;
     k_maps[2].perm = PTE_W;
     
     // 设备空间
@@ -123,7 +116,6 @@ pde_t* setup_kvm(void)
     {
         int erro = map_pages(pgdir, k_maps[i].virt, k_maps[i].phys_end - k_maps[i].phys_start,
                 k_maps[i].phys_start, k_maps[i].perm);
-        // serial_printf("k_maps[%d],物理起始地址：%x, 物理结束地址:%x \n", i, k_maps[i].phys_start, k_maps[i].phys_end);
         if(erro < 0)
         {
             PANIC("setup_kvm: map_pages映射出错");
@@ -133,3 +125,44 @@ pde_t* setup_kvm(void)
 
     return pgdir;
 }
+
+void init_uvm(pde_t *pgdir, char *init, uint32_t size)
+{
+    char* mem;
+    if(size > PGSIZE)
+        PANIC("init_uvm: more than a page");
+    mem = kalloc();
+    memset(mem, 0, PGSIZE);
+    // 将虚拟地址0映射到这一页映射
+    map_pages(pgdir, 0, PGSIZE, V2P(mem), PTE_W | PTE_U);
+    memmove(mem, init, size); // 将init所在的数据移动到分配到的这页上来
+}
+
+void switch_uvm(struct proc* p)
+{
+    struct cpu* cur_cpu = &(cpus[cpu_id]);
+    if(p == 0)
+        PANIC("switch_uvm: no process");
+    if(p->kstack == 0)
+        PANIC("switch_uvm: no kstack");
+    if(p->pgdir == 0)
+        PANIC("switch_uvm: no pgdir");
+
+    set_tss_entry(TSS_I, (uint32_t)&(cur_cpu->ts), sizeof(struct tss_entry) - 1, 0x89, 0x40);
+
+    cur_cpu->ts.ss0 = KER_DS;
+    cur_cpu->ts.esp0 = (uint32_t)p->kstack + KSTACK_SIZE;
+    cur_cpu->ts.iomap_base = (uint16_t)0xFFFF;
+
+    /* 设置tr寄存器指向tss位置0x28是tss的偏移位置 */
+    __asm__ volatile("ltr %%ax" : : "a" (TSS_S));
+
+    // 这里需要切换到进程的地址空间
+    lcr3(V2P(p->pgdir));
+}
+
+void switch_kvm(void)
+{
+    lcr3(V2P(kpgdir));
+}
+

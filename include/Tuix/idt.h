@@ -3,6 +3,7 @@
 #ifndef I_T_IDT_H
 #define I_T_IDT_H
 
+#include "Tuix/trap_frame.h"
 #include <stddef.h>
 #include <Tuix/isr.h>
 #include <Tuix/interrupts.h>
@@ -41,10 +42,10 @@ void init_idt(void);
 中断总流程：
 （硬件层面自动完成）
     当中断发生时，cpu会去查IDT表，根据idt_set_gate的设置（idt_init）
-    跳转至对于汇编桩函数，然后统一再跳转到(isr_common)根据编号查表
+    跳转至对于汇编桩函数，然后统一再跳转到(trap汇编函数)根据编号查表
 （软件层面接力）
     找到对应的软件处理函数，调用相应的中断处理函数
-    处理完成后返回(isr_common)，恢复寄存器，iret返回
+    处理完成后返回(trap函数)，恢复寄存器，iret返回
 */
 
 /**
@@ -61,21 +62,15 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
  * @param n 编号
  * @param handler 待注册函数的指针
  */
-inline void register_interrupt_handler(uint8_t n, interrupt_handler_t handler)
+static inline void register_interrupt_handler(uint8_t n, interrupt_handler_t handler)
 {
     interrupt_handlers[n] = handler;
 }
 
 /**
- * 统一让isr跳转到这里查表
+ * 分发函数，汇编trap函数会调用这个
+ * @param frame 保存中断栈
  */
-__attribute__((naked))
-void isr_common(void);
-
-/**
- * 分发函数
- * @param 保存中断栈
- */
-void isr_handler(struct pt_regs* regs);
+void isr_handler(struct trap_frame* frame);
 
 #endif

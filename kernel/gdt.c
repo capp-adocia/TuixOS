@@ -1,54 +1,52 @@
 /* kernel/gdt.c */
 
-#include "Tuix/sysconf.h"
+#include <Tuix/sysconf.h>
 #include <Tuix/gdt.h>
-
-struct gdt_entry gdt_entries[6];
+#include <Tuix/process.h>
 
 void init_gdt()
 {
-    gdt_entries[0].limit_low = 0;
-    gdt_entries[0].base_low = 0;
-    gdt_entries[0].base_middle = 0;
-    gdt_entries[0].access = 0;
-    gdt_entries[0].granularity = 0;
-    gdt_entries[0].base_high = 0;
-
-    gdt_entries[1].limit_low = 0xFFFF;      // 内核代码段 (0x08)
-    gdt_entries[1].base_low = 0x0000;
-    gdt_entries[1].base_middle = 0x00;
-    gdt_entries[1].access = 0x9A;
-    gdt_entries[1].granularity = 0xCF;
-    gdt_entries[1].base_high = 0x00;
+    struct cpu* c = &(cpus[cpu_id]);
     
-    gdt_entries[2].limit_low = 0xFFFF;      // 内核数据段 (0x10)
-    gdt_entries[2].base_low = 0x0000;
-    gdt_entries[2].base_middle = 0x00;
-    gdt_entries[2].access = 0x92;
-    gdt_entries[2].granularity = 0xCF;
-    gdt_entries[2].base_high = 0x00;
+    c->gdt[0].limit_low = 0x0000;
+    c->gdt[0].base_low = 0x0000;
+    c->gdt[0].base_middle = 0x00;
+    c->gdt[0].access = 0x00;
+    c->gdt[0].granularity = 0x00;
+    c->gdt[0].base_high = 0x00;
 
-    // 添加用户态段
-    gdt_entries[3].limit_low = 0xFFFF;      // 用户代码段 (0x18)
-    gdt_entries[3].base_low = 0x0000;
-    gdt_entries[3].base_middle = 0x00;
-    gdt_entries[3].access = 0xFA;           // DPL=3
-    gdt_entries[3].granularity = 0xCF;
-    gdt_entries[3].base_high = 0x00;
+    c->gdt[KER_CI].limit_low = 0xFFFF;
+    c->gdt[KER_CI].base_low = 0x0000;
+    c->gdt[KER_CI].base_middle = 0x00;
+    c->gdt[KER_CI].access = 0x9A;
+    c->gdt[KER_CI].granularity = 0xCF;
+    c->gdt[KER_CI].base_high = 0x00;
 
-    gdt_entries[4].limit_low = 0xFFFF;      // 用户数据段 (0x20)
-    gdt_entries[4].base_low = 0x0000;
-    gdt_entries[4].base_middle = 0x00;
-    gdt_entries[4].access = 0xF2;           // DPL=3
-    gdt_entries[4].granularity = 0xCF;
-    gdt_entries[4].base_high = 0x00;
+    c->gdt[KER_DI].limit_low = 0xFFFF;
+    c->gdt[KER_DI].base_low = 0x0000;
+    c->gdt[KER_DI].base_middle = 0x00;
+    c->gdt[KER_DI].access = 0x92;
+    c->gdt[KER_DI].granularity = 0xCF;
+    c->gdt[KER_DI].base_high = 0x00;
 
-    set_tss_entry(5, (uint32_t)&cpu_tss[cpu_cur_id], sizeof(struct tss_entry)-1, 0x89, 0x40);
-    
+    c->gdt[USR_CI].limit_low = 0xFFFF;
+    c->gdt[USR_CI].base_low = 0x0000;
+    c->gdt[USR_CI].base_middle = 0x00;
+    c->gdt[USR_CI].access = 0xFA;
+    c->gdt[USR_CI].granularity = 0xCF;
+    c->gdt[USR_CI].base_high = 0x00;
+
+    c->gdt[USR_DI].limit_low = 0xFFFF;
+    c->gdt[USR_DI].base_low = 0x0000;
+    c->gdt[USR_DI].base_middle = 0x00;
+    c->gdt[USR_DI].access = 0xF2;
+    c->gdt[USR_DI].granularity = 0xCF;
+    c->gdt[USR_DI].base_high = 0x00;
+
     // 设置好gdt的指针
     struct gdt_ptr gdt;
-    gdt.limit = sizeof(gdt_entries) - 1;
-    gdt.base = (uint32_t)&gdt_entries;
+    gdt.limit = sizeof(c->gdt) - 1;
+    gdt.base = (uint32_t)&(c->gdt);
     // 重载寄存器，刷新缓存
     __asm__ volatile(
         "lgdt %0\n"
@@ -62,17 +60,15 @@ void init_gdt()
         "mov %%ax, %%ss\n"
         : :"m"(gdt)
     );
-    
-    /* 设置tr寄存器指向tss位置0x28是tss的偏移位置 */
-    __asm__ volatile("ltr %%ax" : : "a" (TSS_0_S));
 }
 
 void set_tss_entry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t granularity)
 {
-    gdt_entries[num].base_low = (base & 0xFFFF);
-    gdt_entries[num].base_middle = (base >> 16) & 0xFF;
-    gdt_entries[num].base_high = (base >> 24) & 0xFF;
-    gdt_entries[num].limit_low = (limit & 0xFFFF);
-    gdt_entries[num].granularity = ((limit >> 16) & 0x0F) | (granularity & 0xF0);
-    gdt_entries[num].access = access;
+    struct cpu* c = &(cpus[cpu_id]);
+    c->gdt[num].base_low = (base & 0xFFFF);
+    c->gdt[num].base_middle = (base >> 16) & 0xFF;
+    c->gdt[num].base_high = (base >> 24) & 0xFF;
+    c->gdt[num].limit_low = (limit & 0xFFFF);
+    c->gdt[num].granularity = ((limit >> 16) & 0x0F) | (granularity & 0xF0);
+    c->gdt[num].access = access;
 }

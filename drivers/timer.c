@@ -1,6 +1,5 @@
 /* driver/timer.c */
 
-#include "Tuix/ptrace.h"
 #include <Tuix/timer.h>
 #include <Tuix/io.h>
 #include <Tuix/serial.h>
@@ -37,7 +36,7 @@ void init_timer(uint32_t frequency)
 }
 
 // 每10ms强制切换进程
-void timer_handler(struct pt_regs* regs)
+void timer_handler(struct trap_frame* frame)
 {
     // uint32_t current_esp;
     // __asm__ volatile("mov %%esp, %0" : "=r"(current_esp));
@@ -50,5 +49,5 @@ void timer_handler(struct pt_regs* regs)
     // schedule();
 
     /* 此后，当前中断帧里保存的就是新pcb的数据 */
-    send_eoi(regs->int_no);
+    send_eoi(frame->int_no);
 }

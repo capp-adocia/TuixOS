@@ -1,5 +1,8 @@
 /* kernel/process.c */
 
+#include "Tuix/gdt.h"
+#include "Tuix/mmu.h"
+#include "Tuix/vm.h"
 #include <Tuix/sysconf.h>
 #include <stddef.h>
 #include <Tuix/queue.h>
@@ -7,139 +10,130 @@
 #include <Tuix/serial.h>
 #include <Tuix/pic.h>
 #include <Tuix/panic.h>
-#include <Tuix/tss.h>
+#include <Tuix/kalloc.h>
+#include <string.h>
 
-// 分配4KB的任务栈
-static uint32_t ta_stack[1024]; // 用户栈
-static uint32_t ta_kstack[1024]; // 内核栈
-static uint32_t tb_stack[1024];
-static uint32_t tb_kstack[1024];
-struct process_control_block pcbs[MAX_TASKS];
-struct process_control_block* pcb_curr;
-struct queue r_queue;
+static struct proc* proc_first; // 第一个进程
+int next_pid = 1; // pid
+struct cpu cpus[MAX_CPUS];
+extern void trap_ret(void);
 
-void init_task(void)
+/* 进程表 */
+struct
 {
-    queue_init(&r_queue);
-    // 初始化任务A
-    pcbs[0].ustack.base = (uint32_t)ta_stack;
-    pcbs[0].ustack.top = (uint32_t)ta_stack + sizeof(ta_stack);
-    pcbs[0].kstack.base = (uint32_t)ta_kstack;
-    pcbs[0].kstack.top = (uint32_t)ta_kstack + sizeof(ta_kstack);
+    struct proc proc[MAX_PROC];
+} ptable;
 
-    setup_task_context(&pcbs[0], task_A);
-    enqueue(&r_queue, &(pcbs[0].ready_node));
+// 新进程第一个执行的函数
+static void fork_ret(void)
+{
+    static int first = 1;
+    if (first)
+    {
 
-    // 初始化任务B
-    pcbs[1].ustack.base = (uint32_t)tb_stack;
-    pcbs[1].ustack.top = (uint32_t)tb_stack + sizeof(tb_stack);
-    pcbs[1].kstack.base = (uint32_t)tb_kstack;
-    pcbs[1].kstack.top = (uint32_t)tb_kstack + sizeof(tb_kstack);
-    setup_task_context(&pcbs[1], task_B);
-    enqueue(&r_queue, &(pcbs[1].ready_node));
+    }
+    // 新进程都会执行这个函数，返回后弹出栈顶指针eip = trap_ret
 }
 
-void switch_to(struct process_control_block *next)
+void init_user(void)
 {
-    struct process_control_block* prev = pcb_curr;
-    cpu_tss[cpu_cur_id].esp0 = next->kstack.top;
-    context_switch(prev, next);
+    struct proc* p;
+
+    p = alloc_process();
+    // 填充进程用户上下文信息
+    proc_first = p;
+    p->pgdir = setup_kvm(); // 创建新的页表映射给进程
+    if(p->pgdir == 0)
+        PANIC("userinit: out of memory?");
+    // init_uvm(p->pgdir, ); // TODO
+    p->size = PGSIZE;
+    memset(p->tf, 0, sizeof(*(p->tf)));
+    p->tf->cs = USR_CS | USR_DPL;
+    p->tf->ds = USR_DS | USR_DPL;
+    p->tf->es = p->tf->ds;
+    p->tf->ss = p->tf->ds;
+    p->tf->eflags = FL_IF;
+    p->tf->esp = PGSIZE; // 注意进程内存空间只有1页，而从地址0开始，那么栈顶就在0+PGSIZE这里
+    p->tf->eip = 0; // 从虚拟地址0开始
+    strncpy(p->name, "initcode", sizeof(p->name));
+    p->state = RUNNABLE; // 就绪状态
 }
 
-void context_switch(struct process_control_block *prev, struct process_control_block *next)
+struct proc* alloc_process(void)
 {
-    __asm__ volatile(
-        // 保存前一个任务的上下文
-        "pushf\n"
-        "push %%ebp\n"
-        "push %%esi\n"
-        "push %%edi\n"
-        "push %%ebx\n"
-        "push %%ds\n"
-        "push %%es\n"
-        "push %%fs\n"
-        "push %%gs\n"
-        
-        // 保存当前栈指针到prev->ctx.esp
-        "mov %%esp, %0\n"
-        
-        // 切换到下一个任务
-        // 更新当前任务指针
-        "mov %2, %%eax\n"    // next指针
-        "mov %%eax, pcb_curr\n" // 这里更新为下一个pcb
-        
-        // 恢复栈指针
-        "mov %1, %%esp\n"    // next->ctx.esp
-        // 恢复上下文
-        "pop %%gs\n"
-        "pop %%fs\n"
-        "pop %%es\n"
-        "pop %%ds\n"
-        "pop %%ebx\n"
-        "pop %%edi\n"
-        "pop %%esi\n"
-        "pop %%ebp\n"
-        "popf\n"
-        
-        // 跳转到下一个任务的EIP，利用中断保存到的信息
-        "ret\n"
-        : "=m"(prev->ctx.esp)
-        : "m"(next->ctx.esp),
-          "m"(next)
-        : "eax", "memory"
-    );
+    struct proc* p;
+
+    for(int i = 0;i < MAX_PROC;i++)
+    {
+        if(ptable.proc[i].state == UNUSED)
+        {
+            return config_proc(&(ptable.proc[i]));
+        }
+    }
+    return 0;
 }
 
-void launch_first_task()
+
+struct proc* config_proc(struct proc* proc)
 {
-    // 首次执行先调度一次
-    schedule();
-    // 这里额外设置一次，从内核切换到第一个任务，后续任务切换进行
-    cpu_tss[cpu_cur_id].esp0 = pcb_curr->kstack.top;
+    char* sp; // 栈指针
+    proc->state = EMBRYO;
+    proc->pid = next_pid++;
+    // 分配内核栈
+    // 如果分配失败了
+    proc->kstack = kalloc();
+    if(proc->kstack == 0)
+    {
+        proc->state = UNUSED;
+        return 0;
+    }
+    // 分配成功后将sp指向栈顶
+    sp = proc->kstack + KSTACK_SIZE;
+    sp -= sizeof(*(proc->tf)); // 预留陷阱栈这么大的空间
     
-    serial_printf("切换到用户态准备执行第一个任务...\n");
-
-    __asm__ volatile(
-        "pushl $0x23\n"          // SS (用户数据段)
-        "pushl %0\n"             // ESP (用户栈指针)
-        "pushl $0x202\n"         // EFLAGS (IF=1)
-        "pushl $0x1B\n"          // CS (用户代码段)
-        "pushl %1\n"             // EIP (任务入口)
-        
-        // 设置段寄存器
-        "mov $0x23, %%ax\n"
-        "mov %%ax, %%ds\n"
-        "mov %%ax, %%es\n"
-        "mov %%ax, %%fs\n"
-        "mov %%ax, %%gs\n"
-        
-        // 切换到用户态
-        "iret\n"
-        : 
-        : "r"(pcb_curr->ctx.esp),  // 用户栈
-          "r"(pcb_curr->ctx.eip)   // 任务入口
-        : "eax", "memory"
-    );
+    // 预留4字节刚好能放一个32位地址，放入trap_ret的地址
+    // trap_ret其实就是trap函数的下半部分
+    sp -= sizeof(uint32_t);
+    *(uint32_t*)sp = (uint32_t)trap_ret; // 新进程执行的第二个函数
+    
+    // 再放入内核栈上下文信息
+    sp -= sizeof(*(proc->ctx));
+    proc->ctx = (struct context*)sp;
+    memset(proc->ctx, 0, sizeof(*(proc->ctx)));
+    proc->ctx->eip = (uint32_t)fork_ret;
+    return proc;
 }
 
-void setup_task_context(struct process_control_block* pcb, void (*entry_point)())
-{   
-    uint32_t* uesp = (uint32_t*)pcb->ustack.top;
-    pcb->ctx.esp = (uint32_t)uesp;  // 用户栈指针
-    pcb->ctx.eip = (uint32_t)entry_point;
-    
-    pcb->ctx.eax = 0;
-    pcb->ctx.ecx = 0;
-    pcb->ctx.edx = 0;
-    pcb->ctx.ebx = 0;
-    pcb->ctx.ebp = 0;
-    pcb->ctx.esi = 0;
-    pcb->ctx.edi = 0;
-    pcb->ctx.ds = 0x23;
-    pcb->ctx.es = 0x23;
-    pcb->ctx.fs = 0;
-    pcb->ctx.gs = 0;
-    pcb->ctx.eflags = 0x202;
+void launch_first_proc()
+{
+    struct proc *p;
+    struct cpu *c = cpus;
+    c->proc = 0;
+
+    while(true)
+    {
+        __asm__ volatile("sti");
+
+        // 遍历进程表，找到可运行的进程
+        for(int i = 0;i < MAX_PROC;i++)
+        {
+            if(ptable.proc[i].state != RUNNABLE)
+            {
+                continue;
+            }
+            p = &(ptable.proc[i]);
+            // 找到后，设置进程的状态
+            c->proc = p;
+            // 切换到用户虚拟页表
+            switch_uvm(p);
+            p->state = RUNNING;
+            // 进行上下文切换，执行这个函数后，后面都不会再返回了，除非已经直接完成
+            switch_to(&(c->scheduler), p->ctx);
+            // 切换回内核页表，因为已经到内核态了
+            switch_kvm();
+            c->proc = 0; // 执行到这里用户进程已经完成了
+        }
+    }
 }
 
 // 当进程使用了yield表示这个线程主动释放了cpu使用权，那么此时应该把它加入就绪队列，并从就绪队列中取出一个新任务
@@ -150,72 +144,25 @@ void yield(void)
 
 void schedule(void)
 {
-    // 如果首次调度pcb_curr不存在从就绪队列中出队一个
-    if(!pcb_curr)
-    {
-        struct list_head* next = dequeue(&r_queue);
-        if (next)
-            pcb_curr = container_of(next, struct process_control_block, ready_node);
-
-        return;
-    }
-    // 先判断队头元素是否等于当前的pcb，相同则直接退出继续执行当前任务
-    struct list_head* t = queue_peek(&r_queue);
-    if(container_of(t, struct process_control_block, ready_node) == pcb_curr)
-        return;
-
-    // 将当前任务重新加入就绪队列
-    enqueue(&r_queue, &(pcb_curr->ready_node));
-    // 选择下一个任务
-    struct list_head* next = dequeue(&r_queue);
-    // 调度选择下一个任务后切换到该任务的上下文
-    if(next)
-        switch_to(container_of(next, struct process_control_block, ready_node));
-}
-
-void task_A(void)
-{
-    /* 启用定时器中断，注意在进入第一个任务时启用 */
-    // enable_irq(IRQ_TIMER);
-    __asm__ volatile("sti");
-
-    volatile int count = 0;
-    while (1)
-    {
-        uint32_t curesp;
-        __asm__ volatile("mov %%esp, %0" : "=r"(curesp));
-        if(curesp >= (uint32_t)pcbs[0].ustack.base && curesp <= (uint32_t)pcbs[0].ustack.top)
-        {
-            serial_printf("[There A at A ustack] ");
-        }
-        if(curesp >= (uint32_t)pcbs[1].ustack.base && curesp <= (uint32_t)pcbs[1].ustack.top)
-        {
-            serial_printf("[There A at B ustack] ");
-        }
-        serial_printf("A%d ", ++count);
-        // for (volatile int i = 0; i < 5000000; i++);
-        // yield();
-    }
-}
-
-void task_B(void)
-{
-    volatile int count = 0;
-    while (1)
-    {
-        uint32_t curesp;
-        __asm__ volatile("mov %%esp, %0" : "=r"(curesp));
-        if(curesp >= (uint32_t)pcbs[0].ustack.base && curesp <= (uint32_t)pcbs[0].ustack.top)
-        {
-            serial_printf("[There B at A ustack] ");
-        }
-        if(curesp >= (uint32_t)pcbs[1].ustack.base && curesp <= (uint32_t)pcbs[1].ustack.top)
-        {
-            serial_printf("[There B at B ustack] ");
-        }
-
-        serial_printf("B%d ", ++count);  // 应该输出 B1, B2, B3...
-        // for (volatile int i = 0; i < 5000000; i++);
-        // yield();
-    }
+    // // 如果首次调度pcb_curr不存在从就绪队列中出队一个
+    // if(!pcb_curr)
+    // {
+    //     struct list_head* next = dequeue(&r_queue);
+    //     if (next)
+    //         pcb_curr = container_of(next, struct proc, ready_node);
+    //
+    //     return;
+    // }
+    // // 先判断队头元素是否等于当前的pcb，相同则直接退出继续执行当前任务
+    // struct list_head* t = queue_peek(&r_queue);
+    // if(container_of(t, struct proc, ready_node) == pcb_curr)
+    //     return;
+    //
+    // // 将当前任务重新加入就绪队列
+    // enqueue(&r_queue, &(pcb_curr->ready_node));
+    // // 选择下一个任务
+    // struct list_head* next = dequeue(&r_queue);
+    // // 调度选择下一个任务后切换到该任务的上下文
+    // if(next)
+    //     switch_to(container_of(next, struct proc, ready_node));
 }

@@ -8,7 +8,8 @@ NASM = nasm
 # 目录配置
 BUILD_DIR = out
 ISO_DIR = isofiles
-SRC_DIRS = init mm lib boot kernel drivers
+SRC_DIRS = init mm lib kernel drivers
+ASM_DIRS = boot kernel/asm
 
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
@@ -21,10 +22,13 @@ LDFLAGS = -m elf_i386 -nostdlib -T kernel.ld
 
 # 自动查找源文件
 C_SRCS = $(shell find $(SRC_DIRS) -name "*.c")
+ASM_SRCS = $(shell find $(ASM_DIRS) -name "*.asm")
 
 # 生成目标文件路径
-C_OBJS = $(C_SRCS:%.c=$(BUILD_DIR)/%.o)
-ASM_OBJS = $(BUILD_DIR)/boot/kernel_entry.o
+C_OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(C_SRCS))
+ASM_OBJS = $(patsubst %.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
+
+OBJS = $(ASM_OBJS) $(C_OBJS)  # 汇编文件要在前，确保入口点正确
 
 # 目标
 KERNEL_ELF = $(BUILD_DIR)/Tuix.kernel
@@ -40,7 +44,7 @@ $(ISO_IMAGE): $(KERNEL_ELF)
 	grub-mkrescue -o $(ISO_IMAGE) .
 
 # 编译汇编入口文件
-$(BUILD_DIR)/boot/kernel_entry.o: boot/kernel_entry.asm
+$(BUILD_DIR)/%.o: %.asm
 	@mkdir -p $(dir $@)
 	$(NASM) -f elf32 $< -o $@
 
@@ -50,8 +54,8 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # 链接内核
-$(KERNEL_ELF): $(ASM_OBJS) $(C_OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(ASM_OBJS) $(C_OBJS)
+$(KERNEL_ELF): $(OBJS)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 # 运行和调试
 run: $(ISO_IMAGE)

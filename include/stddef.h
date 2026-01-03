@@ -40,4 +40,7 @@ typedef int bool;
     ((type*)((char*)(ptr) - offsetof(type, member)))
 
 
+typedef int pde_t;
+typedef int pte_t;
+
 #endif

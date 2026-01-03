@@ -73,7 +73,7 @@ char scancode_to_char(uint8_t scancode)
     }
 }
 
-void keyboard_handler(struct pt_regs* regs)
+void keyboard_handler(struct trap_frame* frame)
 {
     uint8_t scancode = inb(0x60);
     // 按下事件
@@ -92,5 +92,5 @@ void keyboard_handler(struct pt_regs* regs)
         // serial_printf("按键释放，扫描码:%x\n", press_code);
     }
     
-    send_eoi(regs->int_no);
+    send_eoi(frame->int_no);
 }

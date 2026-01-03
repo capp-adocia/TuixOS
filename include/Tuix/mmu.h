@@ -31,6 +31,7 @@
 #define KERNLINK (KERNBASE+EXTMEM)  // 内核链接地址
 #define EXTMEM      0x100000
 #define DEVSPACE    0xFE000000      // 其他设备位于高地址
+#define PHYSTOP     0xE000000
 
 /* 虚实转换 */
 #define V2P(a) (((uint32_t) (a)) - KERNBASE)

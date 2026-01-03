@@ -10,7 +10,6 @@
 #include <Tuix/screen.h>
 #include <Tuix/serial.h>
 #include <Tuix/timer.h>
-#include <Tuix/tss.h>
 #include <def.h>
 #include <Tuix/panic.h>
 
@@ -18,11 +17,11 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
 void print_LOGO(void);
 
-const char *logo[] = {"TTTTTTTT  UU   UU  IIIIII    +       +",
-                      "   TT     UU   UU    II      +       +",
-                      "   TT     UU   UU    II   +++++++ +++++++",
-                      "   TT     UU   UU    II      +       +",
-                      "   TT      UUUUU   IIIIII    +       +"};
+const char *logo[] = {"TTTTTTTT  UU   UU  IIIIII  +++   +++",
+                      "   TT     UU   UU    II       +++   ",
+                      "   TT     UU   UU    II       +++   ",
+                      "   TT     UU   UU    II       +++   ",
+                      "   TT      UUUUU   IIIIII  +++   +++"};
 
 void print_LOGO(void)
 {
@@ -64,28 +63,25 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_show();
     /* 解析mbi_addr */
     parse_multiboot2_info(magic, mbi_addr);
-    /* 初始化tss */
-    init_tss();
     /* 设置好gdt表项 */
     init_gdt();
-    /* 内存初始化 */
+    /* 为存储页表先初始化一部分内存 */
     init_physical_memory((uint32_t*)mem_info.kernel_end_addr, P2V(4*1024*1024));
     /* 分配内核页表 */
     init_kvm();
+    /* 分配剩余的空闲页 */
+    init_physical_memory(P2V(4*1024*1024), P2V(PHYSTOP));
     /* 初始化pic和idt表 */
-    // init_pic();
-    // init_idt();
+    init_pic();
+    init_idt();
     /* 初始化定时器 */
-    // init_timer(20);
+    init_timer(20);
     /* 启用键盘中断 */
-    // init_keyboard_system();
-    /* 初始化任务 */
-    // init_task();
-    /* 启动系统第一个任务 */
-    // serial_printf("任务开始，这里手动调用一次...\n");
-    // 这里先手动调用一次放入第一个任务到就绪队列中，然后运行第一个任务
-    // launch_first_task();
-    // serial_printf("任务结束，已经返回内核\n");
-
+    init_keyboard_system();
+    /* 初始化第一个用户进程 */
+    init_user();
+    /* 执行调度以启动第一个用户进程 */
+    // launch_first_proc();
+    /* 不会执行这里，因为已经开始调度了 */
     while (1) { __asm__ volatile("hlt"); }
 }

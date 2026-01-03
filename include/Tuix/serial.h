@@ -14,7 +14,7 @@ void init_serial(void);
  * 串口输出字符
  * @param c 字符
  */
-void serial_putchar(char c);
+void serial_putchar(const char c);
 
 /**
  * 串口格式化输出字符串

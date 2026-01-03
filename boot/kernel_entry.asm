@@ -41,15 +41,10 @@ _start:
     mov esp, boot_stack_top
     push edi
     push esi
-    push 0
+    push 0 ; 这里永远不会返回
     ; 以下是设置调用内核main() 小心这里千万不能用call,必须要jmp,因为call是相对跳转,而jmp是按绝对地址跳转
     mov ecx, kernel_main
     jmp ecx
-    cli
-
-.hang:
-    hlt
-    jmp .hang
 
 ; 定义临时页表
 section .data

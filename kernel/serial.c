@@ -18,12 +18,10 @@ void init_serial(void)
     serial_printf("=== Tuix OS 启动 ===\n");
 }
 
-void serial_putchar(char c)
+void serial_putchar(const char c)
 {
-    // __asm__ volatile("cli"); // 串口输出是原子性的，不能被打断
     while ((inb(0x3F8 + 5) & 0x20) == 0);
     outb(0x3F8, c);
-    // __asm__ volatile("sti");
 }
 
 // 串口格式化输出函数

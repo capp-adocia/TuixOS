@@ -4,12 +4,12 @@
 
 #define ISR_NOERRNAME(num, name) \
 void isr_##name##_stub(void) { \
-    __asm__ volatile("pushl $0\n" "pushl $" #num "\n" "jmp isr_common"); \
+    __asm__ volatile("pushl $0\n" "pushl $" #num "\n" "jmp trap"); \
 }
 
 #define ISR_NOERRCODE(num) \
 void isr_##num##_stub(void) { \
-    __asm__ volatile("pushl $0\n" "pushl $" #num "\n" "jmp isr_common"); \
+    __asm__ volatile("pushl $0\n" "pushl $" #num "\n" "jmp trap"); \
 }
 
 #define X(num, name) ISR_NOERRNAME(num, name)

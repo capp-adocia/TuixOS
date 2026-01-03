@@ -2,4 +2,4 @@
 
 #include <Tuix/sysconf.h>
 
-uint8_t cpu_cur_id = 0;
+uint8_t cpu_id = 0;

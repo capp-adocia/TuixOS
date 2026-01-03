@@ -5,6 +5,7 @@
 #include <Tuix/screen.h>
 #include <string.h>
 #include <def.h>
+#include <Tuix/panic.h>
 
 /* 空闲列表 */
 struct run
@@ -22,7 +23,7 @@ void init_physical_memory(void* vstart, void* vend)
     free_range(vstart, vend);
 }
 
-void  free_range(void* vstart, void* vend)
+void free_range(void* vstart, void* vend)
 {
     char* p = (char*)PGROUNDUP((uint32_t)vstart);
     for(;p + PGSIZE <= (char*)vend; p += PGSIZE)
@@ -34,7 +35,6 @@ char* kalloc(void)
     // 从空闲页中取出一页
     struct run* r = kmem.freelist;
     if(r) kmem.freelist = kmem.freelist->next;
-    
     return (char*)r;
 }
 
