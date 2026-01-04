@@ -25,8 +25,8 @@ tmux new-session -s "$SESSION" -n coding -c "$TUIXOS_PATH" -d
 # 设置编码窗口
 tmux send-keys -t "$SESSION":coding "cd $TUIXOS_PATH && nvim ." Enter
 
-# 创建右侧运行窗格(左90 右10 注意-p指的是新划分的窗口)
-tmux split-window -h -p 10 -t "$SESSION":coding -c "$TUIXOS_PATH" -d
+# 创建右侧运行窗格(左80 右20 注意-p指的是新划分的窗口)
+tmux split-window -h -p 20 -t "$SESSION":coding -c "$TUIXOS_PATH" -d
 tmux send-keys -t "$SESSION":coding.1 'echo "[Run] 请运行: make clean && make run"' Enter
 tmux select-pane -t "$SESSION":coding.0
 
@@ -34,8 +34,8 @@ tmux select-pane -t "$SESSION":coding.0
 tmux new-window -t "$SESSION" -n build_debug -c "$TUIXOS_PATH" -d
 tmux send-keys -t "$SESSION":build_debug 'echo "[Build] 执行构建..." && make clean && make debug' Enter
 
-# 创建调试窗格(左10 右90)
-tmux split-window -h -p 90 -t "$SESSION":build_debug -c "$TUIXOS_PATH" -d
+# 创建调试窗格(左20 右80)
+tmux split-window -h -p 80 -t "$SESSION":build_debug -c "$TUIXOS_PATH" -d
 tmux send-keys -t "$SESSION":build_debug.1 'echo "[Debug] 请运行: gdb -x debug/debug-grub.gdb"' Enter
 tmux select-pane -t "$SESSION":build_debug.1
 
