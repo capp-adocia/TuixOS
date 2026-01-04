@@ -16,12 +16,22 @@ struct trap_frame
     uint32_t ecx;
     uint32_t eax;
 
-    uint32_t gs;
-    uint32_t fs;
-    uint32_t es;
-    uint32_t ds;
-    uint32_t int_no, err_code;                          // 2.中断号和错误代码
-    uint32_t eip, cs, eflags, user_esp, ss;             // 1.CPU自动压栈
-} __attribute__((packed));
-
+    uint16_t gs;
+    uint16_t padding1;
+    uint16_t fs;
+    uint16_t padding2;
+    uint16_t es;
+    uint16_t padding3;
+    uint16_t ds;
+    uint16_t padding4;
+    uint32_t int_no;
+    uint32_t err_code;                          // 2.中断号和错误代码
+    uint32_t eip;
+    uint16_t cs;
+    uint16_t padding5;
+    uint32_t eflags;
+    uint32_t user_esp;
+    uint16_t ss;             // 1.CPU自动压栈
+    uint16_t padding6;
+};
 #endif

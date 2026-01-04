@@ -67,10 +67,13 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_gdt();
     /* 为存储页表先初始化一部分内存 */
     init_physical_memory((uint32_t*)mem_info.kernel_end_addr, P2V(4*1024*1024));
+    serial_printf("初始化一部分空间后，空闲列表大小为：%dKB\n", kmem_size() / 1024);
     /* 分配内核页表 */
     init_kvm();
+    serial_printf("分配页表空间后，空闲列表大小为：%dKB\n", kmem_size() / 1024);
     /* 分配剩余的空闲页 */
     init_physical_memory(P2V(4*1024*1024), P2V(PHYSTOP));
+    serial_printf("回收剩余空间后，空闲列表大小为：%dKB\n", kmem_size() / 1024);
     /* 初始化pic和idt表 */
     init_pic();
     init_idt();
@@ -81,7 +84,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     /* 初始化第一个用户进程 */
     init_user();
     /* 执行调度以启动第一个用户进程 */
-    // launch_first_proc();
+    launch_first_proc(); // 调度器执行一次调度
     /* 不会执行这里，因为已经开始调度了 */
     while (1) { __asm__ volatile("hlt"); }
 }

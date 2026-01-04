@@ -1,5 +1,6 @@
 /* mm/kalloc.c */
 
+#include "stddef.h"
 #include <Tuix/kalloc.h>
 #include <Tuix/mmu.h>
 #include <Tuix/screen.h>
@@ -43,10 +44,24 @@ void kfree(char* ptr)
     struct run* r;
     // 填充特殊数值0xdeadbeef
     uint32_t* p = (uint32_t*)ptr;
-    for (int i = 0; i < PGSIZE / MMU_SIZE; i++)
+    for (uint32_t i = 0; i < PGSIZE / sizeof(uint32_t); i++)
         p[i] = FREE_STR;
 
     r = (struct run*)ptr;
     r->next = kmem.freelist;
     kmem.freelist = r;
 }
+
+uint32_t kmem_size(void)
+{
+    struct run* r;
+    uint32_t count = 0;
+    r = kmem.freelist;
+    while(r!=NULL)
+    {
+        r = r->next;
+        count++;
+    }
+    return count * PGSIZE;
+}
+

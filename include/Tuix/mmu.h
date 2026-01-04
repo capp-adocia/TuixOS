@@ -5,7 +5,6 @@
 
 #include <stddef.h>
 
-#define MMU_SIZE    4 // 32位cpu 对应的是4字节
 #define FREE_STR    0xdeadbeef // kfree时设置
 #define PGSIZE      4096    // 页大小
 #define PDE_NUM     1024 // 每一个页目录的页目录项个数
@@ -29,8 +28,9 @@
 /* 内存布局 */
 #define KERNBASE    0x80000000      // 第一个内核虚拟地址
 #define KERNLINK (KERNBASE+EXTMEM)  // 内核链接地址
-#define EXTMEM      0x100000
 #define DEVSPACE    0xFE000000      // 其他设备位于高地址
+// 物理内存RAM地址
+#define EXTMEM      0x100000
 #define PHYSTOP     0xE000000
 
 /* 虚实转换 */

@@ -32,4 +32,10 @@ char* kalloc(void);
  */
 void kfree(char* ptr);
 
+/**
+ * 返回空闲列表的大小
+ * @return 空闲列表当前的字节数
+ */
+uint32_t kmem_size(void);
+
 #endif

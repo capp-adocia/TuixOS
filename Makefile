@@ -13,9 +13,12 @@ ASM_DIRS = boot kernel/asm
 
 # 编译选项
 CFLAGS = -ffreestanding -nostdlib -nostartfiles -nodefaultlibs
-CFLAGS += -m32 -std=gnu11 -O1 -ggdb3 -fno-pie -nostdinc -fno-omit-frame-pointer -fno-stack-protector 
+CFLAGS += -m32 -std=gnu11 -O2 -ggdb
+CFLAGS += -fno-pic -fno-builtin -fno-strict-aliasing
+CFLAGS += -fno-pie -nostdinc -fno-omit-frame-pointer -fno-stack-protector
 CFLAGS += -I include/
-CFLAGS += -Wall -Wextra -Wpedantic
+CFLAGS += -Wall -Wextra # -Werror
+CFLAGS += -MD
 
 # 链接选项
 LDFLAGS = -m elf_i386 -nostdlib -T kernel.ld
@@ -27,46 +30,45 @@ ASM_SRCS = $(shell find $(ASM_DIRS) -name "*.asm")
 # 生成目标文件路径
 C_OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(C_SRCS))
 ASM_OBJS = $(patsubst %.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
-
 OBJS = $(ASM_OBJS) $(C_OBJS)  # 汇编文件要在前，确保入口点正确
 
 # 目标
 KERNEL_ELF = $(BUILD_DIR)/Tuix.kernel
 ISO_IMAGE = Tuix-os.iso
-
 .PHONY: all clean run help
 
 all: $(ISO_IMAGE)
 
-# 创建可启动ISO
-# 注意grub这里会将整个目录打包进iso文件里
-$(ISO_IMAGE): $(KERNEL_ELF)
-	grub-mkrescue -o $(ISO_IMAGE) .
 
-# 编译汇编入口文件
+# 1. 编译汇编入口文件
 $(BUILD_DIR)/%.o: %.asm
 	@mkdir -p $(dir $@)
-	$(NASM) -f elf32 $< -o $@
+	$(NASM) -f elf32 -F dwarf $< -o $@
 
-# C文件构建
+# 2. 编译C文件
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# 链接内核
-$(KERNEL_ELF): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS)
+# 3. 链接内核
+$(KERNEL_ELF): $(OBJS) $(USER_C:.c=.o)
+	$(LD) $(LDFLAGS) -o $@ $^
 
-# 运行和调试
+# 4. 创建可启动ISO
+# 注意grub这里会将整个目录打包进iso文件里
+$(ISO_IMAGE): $(KERNEL_ELF)
+	grub-mkrescue -o $(ISO_IMAGE) .
+
+# 5. 运行和调试
 run: $(ISO_IMAGE)
 	@echo "[QEMU] 启动系统..."
-	qemu-system-i386 -m 128M -cdrom $(ISO_IMAGE) -serial stdio 2>&1 | tee ./log
+	qemu-system-i386 -m 256M -cdrom $(ISO_IMAGE) -serial stdio 2>&1 | tee ./log
 
 # 串口调试
 debug: $(ISO_IMAGE)
 	@echo "[QEMU] 启动串口调试..."
 	@echo "[GDB] gdb -x debug/debug-grub.gdb"
-	qemu-system-i386 -m 128M -cdrom $(ISO_IMAGE) -serial stdio -s -S -display none
+	qemu-system-i386 -m 256M -cdrom $(ISO_IMAGE) -serial stdio -s -S -display none
 
 # 清理
 clean:

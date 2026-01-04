@@ -1,0 +1,23 @@
+/* kernel/user/initcode.c */
+
+#include <stddef.h>
+
+// 简单用户程序：输出字符并退出
+const uint8_t user_init_code[] = {
+    // write(1, "Hello", 5)
+    0xb8, 0x04, 0x00, 0x00, 0x00,  // mov eax, 4 (SYS_write)
+    0xbb, 0x01, 0x00, 0x00, 0x00,  // mov ebx, 1 (stdout)
+    0xb9, 0x1a, 0x00, 0x00, 0x00,  // mov ecx, offset msg
+    0xba, 0x06, 0x00, 0x00, 0x00,  // mov edx, 6 (长度)
+    0xcd, 0x80,                    // int 0x80
+    
+    // exit(0)
+    0xb8, 0x01, 0x00, 0x00, 0x00,  // mov eax, 1 (SYS_exit)
+    0xbb, 0x00, 0x00, 0x00, 0x00,  // mov ebx, 0
+    0xcd, 0x80,                    // int 0x80
+    
+    // 字符串数据
+    'H', 'e', 'l', 'l', 'o', 0x0a, 0  // "Hello\n"
+};
+
+const uint32_t user_init_code_size = sizeof(user_init_code);

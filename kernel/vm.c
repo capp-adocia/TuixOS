@@ -12,7 +12,6 @@
 #include <Tuix/gdt.h>
 #include <Tuix/process.h>
 
-
 pde_t* kpgdir;
 
 struct kmap k_maps[4];
@@ -63,7 +62,9 @@ pte_t* walk_pgdir(pde_t* pgdir, const void* va, int alloc)
         memset(pgtab, 0, PGSIZE);
         // 设置页目录项，指向新页表
         // V2P(pgtab): 将页表虚拟地址转为物理地址
-        *pde = V2P(pgtab) | PTE_P | PTE_W;
+        *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
+        // 注意这里需要加入U位，否则到时进入用户进程无法访问用户进程代码的起始地址。
+        // 还有这里参考xv6实现，实际上这个U位权限过于宽松了。
     }
     return &pgtab[PTX(va)];
 }

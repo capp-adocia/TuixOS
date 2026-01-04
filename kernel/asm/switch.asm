@@ -15,8 +15,8 @@ switch_to:
     ; 切换栈指针
     ; prev->ctx = 寄存器esp
     ; 寄存器esp = next->ctx
-    mov [eax], esp        ; 保存当前ESP到prev->ctx中
-    mov esp, [edx]        ; 更新当前的ESP
+    mov [eax], esp          ; 保存当前ESP到prev->ctx中
+    mov esp, edx            ; 更新当前的ESP
 
     ; 恢复下一个进程的上下文
     pop edi

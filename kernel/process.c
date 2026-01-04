@@ -30,22 +30,27 @@ static void fork_ret(void)
     static int first = 1;
     if (first)
     {
-
+        serial_printf("我是fork_ret\n");
     }
     // 新进程都会执行这个函数，返回后弹出栈顶指针eip = trap_ret
 }
 
+// 这个是外部的用户代码的起始和大小
+extern const uint8_t user_init_code[];
+extern const uint32_t user_init_code_size;
+
 void init_user(void)
 {
     struct proc* p;
-
     p = alloc_process();
+
     // 填充进程用户上下文信息
     proc_first = p;
     p->pgdir = setup_kvm(); // 创建新的页表映射给进程
     if(p->pgdir == 0)
         PANIC("userinit: out of memory?");
-    // init_uvm(p->pgdir, ); // TODO
+    // 将用户初始化代码拷贝到用户空间
+    init_uvm(p->pgdir, (char*)user_init_code, user_init_code_size);
     p->size = PGSIZE;
     memset(p->tf, 0, sizeof(*(p->tf)));
     p->tf->cs = USR_CS | USR_DPL;
@@ -53,8 +58,8 @@ void init_user(void)
     p->tf->es = p->tf->ds;
     p->tf->ss = p->tf->ds;
     p->tf->eflags = FL_IF;
-    p->tf->esp = PGSIZE; // 注意进程内存空间只有1页，而从地址0开始，那么栈顶就在0+PGSIZE这里
-    p->tf->eip = 0; // 从虚拟地址0开始
+    p->tf->user_esp = PGSIZE; // 注意进程内存空间只有1页，而从地址0开始，那么栈顶就在0+PGSIZE这里
+    p->tf->eip = 0x0; // 从虚拟地址0开始
     strncpy(p->name, "initcode", sizeof(p->name));
     p->state = RUNNABLE; // 就绪状态
 }
@@ -64,15 +69,11 @@ struct proc* alloc_process(void)
     struct proc* p;
 
     for(int i = 0;i < MAX_PROC;i++)
-    {
         if(ptable.proc[i].state == UNUSED)
-        {
             return config_proc(&(ptable.proc[i]));
-        }
-    }
+
     return 0;
 }
-
 
 struct proc* config_proc(struct proc* proc)
 {
@@ -90,7 +91,8 @@ struct proc* config_proc(struct proc* proc)
     // 分配成功后将sp指向栈顶
     sp = proc->kstack + KSTACK_SIZE;
     sp -= sizeof(*(proc->tf)); // 预留陷阱栈这么大的空间
-    
+    proc->tf = (struct trap_frame*)sp;
+
     // 预留4字节刚好能放一个32位地址，放入trap_ret的地址
     // trap_ret其实就是trap函数的下半部分
     sp -= sizeof(uint32_t);
@@ -118,9 +120,8 @@ void launch_first_proc()
         for(int i = 0;i < MAX_PROC;i++)
         {
             if(ptable.proc[i].state != RUNNABLE)
-            {
-                continue;
-            }
+            {continue;}
+
             p = &(ptable.proc[i]);
             // 找到后，设置进程的状态
             c->proc = p;
@@ -128,7 +129,9 @@ void launch_first_proc()
             switch_uvm(p);
             p->state = RUNNING;
             // 进行上下文切换，执行这个函数后，后面都不会再返回了，除非已经直接完成
-            switch_to(&(c->scheduler), p->ctx);
+            struct context* new_ctx = p->ctx;
+            struct context* old_ctx = c->scheduler;
+            switch_to(&old_ctx, new_ctx);
             // 切换回内核页表，因为已经到内核态了
             switch_kvm();
             c->proc = 0; // 执行到这里用户进程已经完成了

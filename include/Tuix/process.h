@@ -86,7 +86,7 @@ void switch_to(struct context**, struct context*);
 /**
  * 启动第一个用户进程
  */
-void launch_first_proc();
+void launch_first_proc(void);
 
 /**
  * 负责主动让出CPU
