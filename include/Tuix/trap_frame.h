@@ -25,13 +25,13 @@ struct trap_frame
     uint16_t ds;
     uint16_t padding4;
     uint32_t int_no;
-    uint32_t err_code;                          // 2.中断号和错误代码
+    uint32_t err_code;
     uint32_t eip;
     uint16_t cs;
     uint16_t padding5;
     uint32_t eflags;
     uint32_t user_esp;
-    uint16_t ss;             // 1.CPU自动压栈
+    uint16_t ss;
     uint16_t padding6;
 };
 #endif

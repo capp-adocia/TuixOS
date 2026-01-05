@@ -1,4 +1,4 @@
-/* kernel/sysconf.c */
+/* kernel/sys/sysconf.c */
 
 #include <Tuix/sysconf.h>
 

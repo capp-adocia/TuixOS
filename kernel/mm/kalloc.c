@@ -1,4 +1,4 @@
-/* mm/kalloc.c */
+/* kernel/mm/kalloc.c */
 
 #include "stddef.h"
 #include <Tuix/kalloc.h>

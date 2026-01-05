@@ -17,18 +17,18 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
 void print_LOGO(void);
 
-const char *logo[] = {"TTTTTTTT  UU   UU  IIIIII  +++   +++",
-                      "   TT     UU   UU    II       +++   ",
-                      "   TT     UU   UU    II       +++   ",
-                      "   TT     UU   UU    II       +++   ",
-                      "   TT      UUUUU   IIIIII  +++   +++"};
+const char *logo[] = {"TTTTTTTT  UU   UU  IIIIII  ##   ## ",
+                      "   TT     UU   UU    II      # #   ",
+                      "   TT     UU   UU    II       #    ",
+                      "   TT     UU   UU    II      # #   ",
+                      "   TT      UUUUU   IIIIII  ##   ##"};
 
 void print_LOGO(void)
 {
     int logo_height = sizeof(logo) / sizeof(logo[0]);
     for (int i = 0; i < logo_height; i++)
         kprint(9 + i, 21, logo[i]);
-    
+
     kprint(20, 33, "TuixOS v0.01");
 
     volatile int c = 500000; // 加 volatile 避免被优化

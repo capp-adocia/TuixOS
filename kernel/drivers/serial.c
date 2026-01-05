@@ -1,4 +1,4 @@
-/* kernel/serial.c */
+/* kernel/kernel/serial.c */
 
 #include <Tuix/serial.h>
 #include <stdarg.h>

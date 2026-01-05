@@ -1,4 +1,4 @@
-/* kernel/vm.c */
+/* kernel/mm/vm.c */
 
 #include <Tuix/sysconf.h>
 #include <Tuix/panic.h>
@@ -113,7 +113,7 @@ pde_t* setup_kvm(void)
     memset(pgdir, 0, PGSIZE); // 清空这一页
 
     // 遍历整个kmap并为它设置好地址+标志位
-    for(int i = 0; i < sizeof(k_maps) / sizeof(k_maps[0]);i++)
+    for(uint32_t i = 0; i < sizeof(k_maps) / sizeof(k_maps[0]);i++)
     {
         int erro = map_pages(pgdir, k_maps[i].virt, k_maps[i].phys_end - k_maps[i].phys_start,
                 k_maps[i].phys_start, k_maps[i].perm);

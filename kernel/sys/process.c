@@ -1,8 +1,8 @@
-/* kernel/process.c */
+/* kernel/sys/process.c */
 
-#include "Tuix/gdt.h"
-#include "Tuix/mmu.h"
-#include "Tuix/vm.h"
+#include <Tuix/gdt.h>
+#include <Tuix/mmu.h>
+#include <Tuix/vm.h>
 #include <Tuix/sysconf.h>
 #include <stddef.h>
 #include <Tuix/queue.h>
@@ -66,23 +66,21 @@ void init_user(void)
 
 struct proc* alloc_process(void)
 {
-    struct proc* p;
-
     for(int i = 0;i < MAX_PROC;i++)
         if(ptable.proc[i].state == UNUSED)
-            return config_proc(&(ptable.proc[i]));
+            return config_proc_kstack(&(ptable.proc[i]));
 
     return 0;
 }
 
-struct proc* config_proc(struct proc* proc)
+struct proc* config_proc_kstack(struct proc* proc)
 {
     char* sp; // 栈指针
     proc->state = EMBRYO;
     proc->pid = next_pid++;
     // 分配内核栈
     // 如果分配失败了
-    proc->kstack = kalloc();
+    proc->kstack = kalloc(); // 内核栈在虚拟高地址
     if(proc->kstack == 0)
     {
         proc->state = UNUSED;
@@ -102,7 +100,7 @@ struct proc* config_proc(struct proc* proc)
     sp -= sizeof(*(proc->ctx));
     proc->ctx = (struct context*)sp;
     memset(proc->ctx, 0, sizeof(*(proc->ctx)));
-    proc->ctx->eip = (uint32_t)fork_ret;
+    proc->ctx->eip = (uint32_t)fork_ret; // 新进程执行的第一个函数
     return proc;
 }
 
@@ -130,8 +128,10 @@ void launch_first_proc()
             p->state = RUNNING;
             // 进行上下文切换，执行这个函数后，后面都不会再返回了，除非已经直接完成
             struct context* new_ctx = p->ctx;
-            struct context* old_ctx = c->scheduler;
-            switch_to(&old_ctx, new_ctx);
+            // 这里把内核的esp保存到c->scheduler里了
+            struct context** old_ctx = &c->scheduler;
+            switch_to(old_ctx, new_ctx);
+            serial_printf("回内核了，程序退出成功！\n");
             // 切换回内核页表，因为已经到内核态了
             switch_kvm();
             c->proc = 0; // 执行到这里用户进程已经完成了
@@ -142,11 +142,18 @@ void launch_first_proc()
 // 当进程使用了yield表示这个线程主动释放了cpu使用权，那么此时应该把它加入就绪队列，并从就绪队列中取出一个新任务
 void yield(void)
 {
-    schedule();
+    sched();
 }
 
-void schedule(void)
+void sched(void)
 {
+    // 取出当前cpu的esp作为下一个进程的esp，切换回内核代码
+    struct cpu* c = &cpus[cpu_id];
+    switch_to(&(c->proc->ctx), c->scheduler);
+}
+
+// void schedule(void)
+// {
     // // 如果首次调度pcb_curr不存在从就绪队列中出队一个
     // if(!pcb_curr)
     // {
@@ -168,4 +175,4 @@ void schedule(void)
     // // 调度选择下一个任务后切换到该任务的上下文
     // if(next)
     //     switch_to(container_of(next, struct proc, ready_node));
-}
+// }

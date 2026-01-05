@@ -1,4 +1,4 @@
-/* kernel/queue.c */
+/* kernel/sys/queue.c */
 
 #include <stddef.h>
 #include <Tuix/queue.h>

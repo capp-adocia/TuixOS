@@ -1,4 +1,4 @@
-/* kernel/gdt.c */
+/* kernel/sys/gdt.c */
 
 #include <Tuix/sysconf.h>
 #include <Tuix/gdt.h>

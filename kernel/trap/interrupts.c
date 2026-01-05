@@ -1,11 +1,13 @@
-/* kernel/interrupts.c */
+/* kernel/trap/interrupts.c */
 
+#include "stddef.h"
 #include <Tuix/interrupts.h>
 #include <Tuix/screen.h>
 #include <Tuix/io.h>
 #include <Tuix/keyboard.h>
 #include <Tuix/timer.h>
 #include <Tuix/serial.h>
+#include <Tuix/syscall.h>
 
 void isr_default_handler(struct trap_frame* frame)
 {
@@ -44,6 +46,7 @@ void isr_debug_exception_handler(struct trap_frame* frame)
 // 2: 非屏蔽中断 - 严重硬件错误
 void isr_nmi_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("NMI Interrupt - Hardware Failure\n");
     serial_printf("System Halted\n");
     while(1) __asm__ volatile("cli; hlt");  // 停机
@@ -81,6 +84,7 @@ void isr_invalid_opcode_handler(struct trap_frame* frame)
 // 7: 设备不可用 - 可恢复，模拟或禁用
 void isr_device_not_available_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Device Not Available\n");
     __asm__ volatile("mov %cr0, %eax; and $0xFFFFFFFB, %eax; mov %eax, %cr0\n");
 }
@@ -95,6 +99,7 @@ void isr_double_fault_handler(struct trap_frame* frame)
 // 9: 协处理器段越界
 void isr_coprocessor_segment_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Coprocessor Segment Overrun - Fixed\n");
     // 继续执行
 }
@@ -155,6 +160,7 @@ void isr_page_fault_handler(struct trap_frame* frame)
 // 15: 保留
 void isr_reserved_15_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Reserved Exception 15 - Ignored\n");
     // 继续执行
 }
@@ -162,6 +168,7 @@ void isr_reserved_15_handler(struct trap_frame* frame)
 // 16: 浮点错误 - 可恢复，清除状态
 void isr_floating_point_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Floating Point Exception - Cleared\n");
     // 清除FPU状态字，继续执行
     __asm__ volatile("fnclex\n");
@@ -177,6 +184,7 @@ void isr_alignment_check_handler(struct trap_frame* frame)
 // 18: 机器检查 - 严重硬件错误
 void isr_machine_check_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Machine Check - Hardware Failure\n");
     serial_printf("Critical Error - System Halted\n");
     while(1) __asm__ volatile("cli; hlt");
@@ -187,8 +195,9 @@ void isr_machine_check_handler(struct trap_frame* frame)
 // 19: SIMD浮点异常
 void isr_simd_floating_point_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("SIMD Floating Point Exception - Cleared\n");
-    
+
     uint32_t mxcsr_value = 0x1F80;  // 默认MXCSR值
     __asm__ volatile("ldmxcsr %0" : : "m"(mxcsr_value));
 }
@@ -196,6 +205,7 @@ void isr_simd_floating_point_handler(struct trap_frame* frame)
 // 20: 虚拟化异常
 void isr_virtualization_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Virtualization Exception - Ignored\n");
     // 虚拟化相关异常，在没有虚拟化支持时忽略
 }
@@ -210,42 +220,49 @@ void isr_control_protection_handler(struct trap_frame* frame)
 // 22: 保留
 void isr_reserved_22_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Reserved Exception 22 - Ignored\n");
 }
 
 // 23: 保留
 void isr_reserved_23_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Reserved Exception 23 - Ignored\n");
 }
 
 // 24: 保留
 void isr_reserved_24_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Reserved Exception 24 - Ignored\n");
 }
 
 // 25: 保留
 void isr_reserved_25_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Reserved Exception 25 - Ignored\n");
 }
 
 // 26: 保留
 void isr_reserved_26_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Reserved Exception 26 - Ignored\n");
 }
 
 // 27: 保留
 void isr_reserved_27_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Reserved Exception 27 - Ignored\n");
 }
 
 // 28: Hypervisor注入异常
 void isr_hypervisor_injection_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("Hypervisor Injection Exception - Ignored\n");
     // 虚拟化相关，在没有hypervisor时忽略
 }
@@ -253,6 +270,7 @@ void isr_hypervisor_injection_handler(struct trap_frame* frame)
 // 29: VMM通信异常
 void isr_vmm_communication_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
     serial_printf("VMM Communication Exception - Ignored\n");
     // 虚拟化管理程序通信异常
 }
@@ -268,7 +286,7 @@ void isr_security_exception_handler(struct trap_frame* frame)
 // 31: 保留
 void isr_reserved_31_handler(struct trap_frame* frame)
 {
-    serial_printf("Reserved Exception 31 - Ignored\n");
+    UNUSED(frame);
 }
 
 // 32: 定时器中断
@@ -286,83 +304,89 @@ void isr_keyboard_handler(struct trap_frame* frame)
 // 34: 级联中断
 void isr_cascade_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 35: COM2串口
 void isr_com2_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 36: COM1串口
 void isr_com1_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 37: LPT2并口
 void isr_lpt2_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 38: 软盘控制器
 void isr_floppy_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 39: LPT1并口
 void isr_lpt1_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 40: 实时时钟
 void isr_rtc_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 41: 保留
 void isr_reserved_41_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 42: 保留
 void isr_reserved_42_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 43: 保留
 void isr_reserved_43_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 44: PS/2鼠标
 void isr_ps2_mouse_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
-// 45: 协处理器（FPU错误）
+// 45: 协处理器
 void isr_fpu_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 46: 主ATA硬盘
 void isr_ata1_handler(struct trap_frame* frame)
 {
-
+    UNUSED(frame);
 }
 
 // 47: 从ATA硬盘
 void isr_ata2_handler(struct trap_frame* frame)
 {
+    UNUSED(frame);
+}
 
+// 128: 系统调用
+void isr_syscall_handler(struct trap_frame* frame)
+{
+    syscall_handlers(frame);
 }

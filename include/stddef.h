@@ -43,4 +43,7 @@ typedef int bool;
 typedef int pde_t;
 typedef int pte_t;
 
+/* 防止编译器报错 */
+#define UNUSED(x) (void)(x)
+
 #endif

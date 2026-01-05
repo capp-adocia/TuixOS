@@ -1,8 +1,9 @@
-/* kernel/idt.c */
+/* kernel/trap/idt.c */
 
 #include <Tuix/trap_frame.h>
 #include <Tuix/idt.h>
 #include <Tuix/idt_list.h>
+#include <Tuix/syscall.h>
 
 struct idt_entry idt[IDT_ITEM_NUM];
 interrupt_handler_t interrupt_handlers[IDT_ITEM_NUM];
@@ -33,7 +34,7 @@ void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags)
 }
 
 void isr_handler(struct trap_frame* frame)
-{    
+{
     if(interrupt_handlers[frame->int_no])
         interrupt_handlers[frame->int_no](frame);
     else isr_default_handler(frame); // 默认处理
@@ -41,15 +42,17 @@ void isr_handler(struct trap_frame* frame)
 
 static void register_interrupt_handlers(void)
 {
-    // 注册前32个异常处理函数和从48-255的
+    /* 注册第32-47的中断处理函数和第128号系统调用处理函数 */
 #define X(num, name) register_interrupt_handler(num, isr_##name##_handler);
     IDT_LIST_EXP
     IDT_LIST_PIC
+    IDT_LIST_SYSCALL
 #undef X
     // 先不设置设置其余48-255
 // #define X(num) register_interrupt_handler(num, isr_##num##_handler);
     // IDT_LIST_OTHER
 // #undef X
+    /* 注册系统调用 */
 }
 
 static void idt_set(void)
@@ -58,6 +61,10 @@ static void idt_set(void)
 #define X(num, name) idt_set_gate(num, (uint32_t)isr_##name##_stub, 0x08, 0x8E);
     IDT_LIST_EXP
     IDT_LIST_PIC
+#undef X
+    // 系统调用这里要注意dpl设置为3，否则会触发通用寄存器错
+#define X(num, name) idt_set_gate(num, (uint32_t)isr_##name##_stub, 0x08, 0xEE);
+    IDT_LIST_SYSCALL
 #undef X
 // 设置num暂时没name
 #define X(num) idt_set_gate(num, (uint32_t)isr_##num##_stub, 0x08, 0x8E);

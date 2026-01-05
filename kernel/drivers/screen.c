@@ -1,4 +1,4 @@
-/* driver/screen.c */
+/* kernel/driver/screen.c */
 
 #include "Tuix/mmu.h"
 #include <Tuix/screen.h>

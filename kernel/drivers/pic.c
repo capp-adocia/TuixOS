@@ -1,4 +1,4 @@
-/* driver/pic.c - 8259A PIC初始化 */
+/* kernel/driver/pic.c - 8259A PIC初始化 */
 
 #include <Tuix/io.h>
 #include <Tuix/pic.h>

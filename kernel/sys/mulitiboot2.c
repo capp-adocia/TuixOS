@@ -1,16 +1,11 @@
-/* kernel/mulitiboot2.c */
+/* kernel/sys/mulitiboot2.c */
 
+#include "stddef.h"
 #include <Tuix/mulitiboot2.h>
 #include <Tuix/serial.h>
 #include <def.h>
 
 struct system_memory_info mem_info = {0};
-char _kernel_start[];
-char _kernel_text_start[], _kernel_text_end[];
-char _kernel_rodata_start[], _kernel_rodata_end[];
-char _kernel_data_start[], _kernel_data_end[];
-char _kernel_bss_start[], _kernel_bss_end[];
-char _kernel_end[];
 static void parse_kernel_info(void);
 
 void parse_multiboot2_info(uint32_t magic, uint32_t addr)
@@ -21,10 +16,6 @@ void parse_multiboot2_info(uint32_t magic, uint32_t addr)
         serial_printf("错误: 不是Multiboot2引导 魔数: %x\n", magic);
         return;
     }
-    
-    // 获取信息总大小
-    uint32_t total_size = *(uint32_t*)addr;
-
     //遍历所有Tag
     struct multiboot_tag* tag = (struct multiboot_tag*)(addr + 8);
     int tag_count = 0;
@@ -116,6 +107,7 @@ void parse_memory_map_entries(struct multiboot_tag_mmap* mmap)
     for (uint32_t i = 0; i < entry_count; i++)
     {
         const char* type_desc;
+        UNUSED(type_desc);
         switch (entry->type)
         {
             case 1: type_desc = "可用RAM"; break;

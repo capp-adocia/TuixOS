@@ -1,4 +1,4 @@
-/* driver/keyboard.c */
+/* kernel/driver/keyboard.c */
 
 #include <Tuix/keyboard.h>
 #include <Tuix/screen.h>
@@ -88,7 +88,7 @@ void keyboard_handler(struct trap_frame* frame)
     // 释放事件
     else
     {
-        uint8_t press_code = scancode - 0x80;
+        // uint8_t press_code = scancode - 0x80;
         // serial_printf("按键释放，扫描码:%x\n", press_code);
     }
     

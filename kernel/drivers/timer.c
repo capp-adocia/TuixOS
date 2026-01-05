@@ -1,4 +1,4 @@
-/* driver/timer.c */
+/* kernel/driver/timer.c */
 
 #include <Tuix/timer.h>
 #include <Tuix/io.h>

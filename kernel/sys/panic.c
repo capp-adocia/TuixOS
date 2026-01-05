@@ -1,4 +1,4 @@
-/* kernel/panic.c */
+/* kernel/sys/panic.c */
 
 #include <Tuix/panic.h>
 #include <Tuix/serial.h>
