@@ -8,12 +8,12 @@ static void serial_print_hex(unsigned int num);
 
 void init_serial(void)
 {
+    outb(0x3F8 + 2, 0x00);    // 启用FIFO，清空，14字节阈值
     outb(0x3F8 + 1, 0x00);    // 禁用所有中断
     outb(0x3F8 + 3, 0x80);    // 启用DLAB（设置波特率）
     outb(0x3F8 + 0, 0x03);    // 设置波特率低位 38400 baud
     outb(0x3F8 + 1, 0x00);    // 设置波特率高位
     outb(0x3F8 + 3, 0x03);    // 8位数据，无校验，1停止位
-    outb(0x3F8 + 2, 0xC7);    // 启用FIFO，清空，14字节阈值
     outb(0x3F8 + 4, 0x0B);    // 启用IRQ，设置RTS/DSR
     serial_printf("=== Tuix OS 启动 ===\n");
 }

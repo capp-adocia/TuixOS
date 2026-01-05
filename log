@@ -4,5 +4,7 @@
 回收剩余空间后，空闲列表大小为：228024KB
 Timer initialized with frequency: 20 Hz
 我是fork_ret
-hello, syscall-frame->eax: 2
+系统调用号为: 16
+Hello from user space!
+系统调用号为: 2
 回内核了，程序退出成功！
