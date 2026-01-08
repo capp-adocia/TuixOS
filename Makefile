@@ -27,8 +27,12 @@ LDFLAGS = -m elf_i386 -nostdlib -T kernel.ld
 C_SRCS = $(shell find $(SRC_DIRS) -name "*.c")
 ASM_SRCS = $(shell find $(ASM_DIRS) -name "*.asm")
 
+ENTRY_ASM = boot/kernel_entry.asm
+OTHER_ASM_SRCS = $(filter-out $(ENTRY_ASM), $(ASM_SRCS))
+
 # 生成目标文件路径
-ASM_OBJS = $(patsubst %.asm, $(BUILD_DIR)/%.o, $(ASM_SRCS))
+ASM_OBJS = $(BUILD_DIR)/$(ENTRY_ASM:.asm=.o) \
+           $(patsubst %.asm, $(BUILD_DIR)/%.o, $(OTHER_ASM_SRCS))
 C_OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(C_SRCS))
 OBJS = $(ASM_OBJS) $(C_OBJS)  # 汇编文件要在前，确保入口点正确
 

@@ -8,20 +8,29 @@ global user_init_code_size
 section .text
 user_init_code:
 .loop:
+    ; 测试open系统调用
+    mov eax, 15
+    mov ebx, path
+    mov ecx, 0x200
+    int 0x80
+    ; 把返回的fd保存起来
+    mov ebx, eax ; fd
     mov eax, 16
-    mov ebx, 1        ; fd = 1 (stdout)
-    mov ecx, message  ; buf = 字符串地址
-    mov edx, msg_len  ; count = 字符串长度
+    mov ecx, path ; buf
+    mov edx, msg_len  ; count
     int 0x80
 
-    mov eax, 2
-    int 0x80
+    ; mov eax, 2
+    ; int 0x80
 
     jmp $
 
 message:
-    db "Hello, 用户进程!", 0xA  ; 0xA = 换行
+    db 0xA, "Hello, 用户进程!", 0xA
 msg_len equ $ - message
+
+path:
+    db "/hello.txt", 0
 
 user_init_code_size:
     dd $ - user_init_code  ; 计算大小

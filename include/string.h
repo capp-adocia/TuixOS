@@ -65,30 +65,82 @@ void int_to_str(int num, char* buffer);
 void reverse_str(char* str);
 
 /**
- * 字符串复制
- * @param dst 目标缓冲区
+ * 字符串拷贝
+ * @param dst 目标字符串
  * @param src 源字符串
+ * @return 返回目标字符串拷贝
  */
 char* strcpy(char* dst, const char* src);
 
 /**
- * 安全字符串复制（带长度限制）
+ * 安全字符串拷贝（带长度限制）
+ * @param dst 目标字符串
+ * @param src 源字符串
+ * @param n   拷贝字节数
+ * @return 返回目标字符串拷贝
  */
 char* strncpy(char* dst, const char* src, size_t n);
 
 /**
  * 字符串连接
+ * @param dst 目标字符串
+ * @param src 源字符串
+ * @return 返回目标字符串拷贝
  */
 char* strcat(char* dst, const char* src);
 
+/**
+ * 字符串连接(指定数量n)
+ * @param dst 目标字符串
+ * @param src 源字符串
+ * @param n   拷贝字符数
+ * @return 返回目标字符串拷贝
+ */
 char* strncat(char* dst, const char* src, size_t n);
-
 
 /**
  * 字符串比较
+ * @param s1 源字符串1
+ * @param s2 源字符串2
+ * @return 返回比较结果: val = 0 => "相等" or val < 0 => "不相等"
  */
 int strcmp(const char* s1, const char* s2);
 
+/**
+ * 字符串比较(比较前n个)
+ * @param s1 源字符串1
+ * @param s2 源字符串2
+ * @param n  按前n个字符比较
+ * @return 返回比较结果
+ *         val = 0 => "前n个相等"
+ *         val < 0 => "前n个不相等"
+ */
 int strncmp(const char* s1, const char* s2, size_t n);
+
+
+/**
+ * 字符查找(从前向后查找字符串中第一个出现的字符指针)
+ * @param s 目标字符串
+ * @param c 待查找字符
+ * @return 返回该字符在字符串中指针
+ */
+char* strchr(const char* s, int c);
+
+/**
+ * 字符查找(从后向前查找字符串中最后一个出现的字符指针)
+ * @param s 目标字符串
+ * @param c 待查找字符
+ * @return 返回该字符在字符串中指针
+ */
+char* strrchr(const char* s, int c);
+
+/**
+ * @param haystack 被搜索的主字符串
+ * @param needle 要查找的子字符串
+ * @return 如果找到，返回指向 haystack 中子串首次出现位置的指针；
+ *         如果没找到，返回 NULL；
+ *         如果 needle 是空字符串，返回 haystack
+ */
+char* strstr(const char* haystack, const char* needle);
 
 #endif

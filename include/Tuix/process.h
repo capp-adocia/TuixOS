@@ -7,6 +7,7 @@
 #include <Tuix/trap_frame.h>
 #include <Tuix/sysconf.h>
 #include <Tuix/gdt.h>
+#include <Tuix/file.h>
 
 enum proc_state { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
@@ -36,8 +37,10 @@ struct proc
     // 内核栈
     char* kstack;
     uint32_t kstack_size;
+    // 系统打开文件表
+    struct file* ofile[OFILE_NUM];
     // 就绪队列
-    struct list_head ready_node;
+    struct list_head ready_node; // TODO:暂时未使用
 };
 
 // cpu状态，当前默认用单核

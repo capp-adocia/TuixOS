@@ -45,5 +45,7 @@ typedef int pte_t;
 
 /* 防止编译器报错 */
 #define UNUSED(x) (void)(x)
+#define UNUSED2(x, y) do { (void)(x); (void)(y); } while(0)
+#define UNUSED3(x, y, z) do { (void)(x); (void)(y); (void)(z); } while(0)
 
 #endif

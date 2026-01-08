@@ -30,7 +30,7 @@ static void fork_ret(void)
     static int first = 1;
     if (first)
     {
-        serial_printf("我是fork_ret\n");
+        serial_printf("fork_ret\n");
     }
     // 新进程都会执行这个函数，返回后弹出栈顶指针eip = trap_ret
 }

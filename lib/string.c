@@ -120,8 +120,8 @@ char* strcpy(char* dst, const char* src)
     char *os;
 
     os = dst;
-    while((*dst++ = *src++) != 0)
-        ;
+    while((*dst++ = *src++) != 0);
+
     return os;
 }
 
@@ -129,12 +129,112 @@ char* strncpy(char* dst, const char* src, size_t n)
 {
     char *d = dst;
     const char *s = src;
-    
-    while (n-- && (*d++ = *s++))
-        ;
-    
-    while (n--)
+
+    while (n > 0 && *s != '\0')
+    {
+        *d++ = *s++;
+        n--;
+    }
+
+    while (n > 0)
+    {
         *d++ = '\0';
-    
+        n--;
+    }
+
     return dst;
+}
+
+char* strcat(char* dst, const char* src)
+{
+    char *os = dst;
+    while (*dst != '\0') dst++;
+    while ((*dst++ = *src++) != '\0');
+
+    return os;
+}
+
+char* strncat(char* dst, const char* src, size_t n)
+{
+    char *os = dst;
+    while (*dst != '\0') dst++;
+
+    while (n > 0 && (*dst++ = *src++) != '\0') n--;
+    // 确保以 '\0' 结尾
+    *dst = '\0';
+
+    return os;
+}
+
+int strcmp(const char* s1, const char* s2)
+{
+    while (*s1 != '\0' && *s1 == *s2)
+    {
+        s1++;s2++;
+    }
+
+    return *(uint8_t*)s1 - *(uint8_t*)s2;
+}
+
+int strncmp(const char* s1, const char* s2, size_t n)
+{
+    if (n == 0)
+        return 0;
+
+    while (n > 1 && *s1 != '\0' && *s1 == *s2)
+    {
+        s1++;
+        s2++;
+        n--;
+    }
+    
+    return *(uint8_t*)s1 - *(uint8_t*)s2;
+}
+
+char* strchr(const char* s, int c)
+{
+    while (*s != '\0')
+    {
+        if (*s == (char)c)
+            return (char*)s;
+        s++;
+    }
+
+    return (*s == (char)c) ? (char*)s : NULL;
+}
+
+char* strrchr(const char* s, int c)
+{
+    const char *last = NULL;
+    while (*s != '\0')
+    {
+        if (*s == (char)c)
+            last = s;
+        s++;
+    }
+
+    return (*s == (char)c) ? (char*)s : (char*)last;
+}
+
+char* strstr(const char* haystack, const char* needle)
+{
+    if (*needle == '\0')
+        return (char*)haystack;
+
+    for (; *haystack != '\0'; haystack++)
+    {
+        const char *h = haystack;
+        const char *n = needle;
+
+        while (*h != '\0' && *n != '\0' && *h == *n)
+        {
+            h++;
+            n++;
+        }
+
+        if (*n == '\0')
+            return (char*)haystack;
+    }
+
+    return NULL;
 }
