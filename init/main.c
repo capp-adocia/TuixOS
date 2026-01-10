@@ -35,7 +35,7 @@ void print_LOGO(void)
     volatile int c = 500000; // 加 volatile 避免被优化
     while (c--)
         kprint(0, 0, "LOGO!");
-    
+ 
     kprint(0, 0, "Done!");
 }
 

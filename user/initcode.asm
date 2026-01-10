@@ -1,7 +1,5 @@
 ; kernel/user/initcode.asm
 
-[BITS 32]
-
 global user_init_code
 global user_init_code_size
 
