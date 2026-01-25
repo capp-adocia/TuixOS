@@ -1,0 +1,12 @@
+[
+    {
+        "directory": "/home/sl/Develop/TuixOS",
+        "command": "clang -Iinclude -std=gnu11 -nostdlib -ffreestanding -m32 -fno-pie -c src/kernel/main.c",
+        "file": "src/kernel/main.c"
+    },
+    {
+        "directory": "/home/sl/Develop/TuixOS/tools",
+        "command": "clang -I. -Iinclude -std=gnu11 -c mkfs.c",
+        "file": "tools/mkfs.c"
+    }
+]

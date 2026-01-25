@@ -2,7 +2,6 @@
 
 #include <Tuix/keyboard.h>
 #include <Tuix/screen.h>
-#include <Tuix/io.h>
 #include <Tuix/serial.h>
 #include <Tuix/pic.h>
 

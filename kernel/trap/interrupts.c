@@ -1,9 +1,7 @@
 /* kernel/trap/interrupts.c */
 
-#include "stddef.h"
 #include <Tuix/interrupts.h>
 #include <Tuix/screen.h>
-#include <Tuix/io.h>
 #include <Tuix/keyboard.h>
 #include <Tuix/timer.h>
 #include <Tuix/serial.h>
@@ -38,9 +36,7 @@ void isr_debug_exception_handler(struct trap_frame* frame)
 {
     serial_printf("Debug Exception at EIP: %x - Continue\n", frame->eip);
     // 单步执行，继续
-    while (1) {
-        __asm__ volatile ("cli; hlt");
-    }
+    while (1) { hlt(); cli(); }
 }
 
 // 2: 非屏蔽中断 - 严重硬件错误
@@ -49,7 +45,7 @@ void isr_nmi_handler(struct trap_frame* frame)
     UNUSED(frame);
     serial_printf("NMI Interrupt - Hardware Failure\n");
     serial_printf("System Halted\n");
-    while(1) __asm__ volatile("cli; hlt");  // 停机
+    while(1) { hlt(); cli(); };  // 停机
 }
 
 // 3: 断点 - 可恢复，用于调试
@@ -78,7 +74,7 @@ void isr_invalid_opcode_handler(struct trap_frame* frame)
 {
     serial_printf("Invalid Opcode at EIP: %x\n", frame->eip);
     serial_printf("Unrecoverable - System Halted\n");
-    while(1) __asm__ volatile("cli; hlt");
+    while(1) { hlt(); cli(); };
 }
 
 // 7: 设备不可用 - 可恢复，模拟或禁用
@@ -93,7 +89,7 @@ void isr_device_not_available_handler(struct trap_frame* frame)
 void isr_double_fault_handler(struct trap_frame* frame)
 {
     serial_printf("Double Fault! Error: %x\n", frame->err_code);
-    while(1) __asm__ volatile("cli; hlt");
+    while(1) { hlt(); cli(); };
 }
 
 // 9: 协处理器段越界
@@ -109,7 +105,7 @@ void isr_invalid_tss_handler(struct trap_frame* frame)
 {
     serial_printf("Invalid TSS. Error: %x\n", frame->err_code);
     serial_printf("Kernel Panic - System Halted\n");
-    while(1) __asm__ volatile("cli; hlt");
+    while(1) { hlt(); cli(); };
 }
 
 // 11: 段不存在, 重新加载段
@@ -125,7 +121,7 @@ void isr_stack_segment_fault_handler(struct trap_frame* frame)
 {
     serial_printf("Stack Segment Fault. Error: %x\n", frame->err_code);
     serial_printf("Stack Corrupted - System Halted\n");
-    while(1) __asm__ volatile("cli; hlt");
+    while(1) { hlt(); cli(); };
 }
 
 // 13: 通用保护错误 - 严重内存/权限错误
@@ -133,7 +129,7 @@ void isr_general_protection_fault_handler(struct trap_frame* frame)
 {
     serial_printf("General Protection Fault! Error: %x\n", frame->err_code);
     serial_printf("System Halted\n");
-    while(1) __asm__ volatile("cli; hlt");
+    while(1) { hlt(); cli(); };
 }
 
 // 14: 页错误 - 可恢复，处理缺页
@@ -154,7 +150,7 @@ void isr_page_fault_handler(struct trap_frame* frame)
     serial_printf("  RSVD=%d (Reserved bit %s)\n", (frame->err_code & 0x8) ? 1 : 0);
     serial_printf("  I/D=%d (%s fetch)\n", (frame->err_code & 0x10) ? 1 : 0);
 
-    while(1) __asm__ volatile("cli; hlt");
+    while(1) { cli(); hlt(); }
 }
 
 // 15: 保留
@@ -187,7 +183,7 @@ void isr_machine_check_handler(struct trap_frame* frame)
     UNUSED(frame);
     serial_printf("Machine Check - Hardware Failure\n");
     serial_printf("Critical Error - System Halted\n");
-    while(1) __asm__ volatile("cli; hlt");
+    while(1) { hlt(); cli(); };
 }
 
 // 19-31: 保留和特定平台异常

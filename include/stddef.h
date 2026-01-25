@@ -5,7 +5,7 @@
 
 /* 基础整数类型 */
 typedef unsigned char  uint8_t;
-typedef unsigned short uint16_t;  
+typedef unsigned short uint16_t;
 typedef unsigned int   uint32_t;
 typedef unsigned long long uint64_t;
 
@@ -39,13 +39,12 @@ typedef int bool;
 #define container_of(ptr, type, member) \
     ((type*)((char*)(ptr) - offsetof(type, member)))
 
-
 typedef int pde_t;
 typedef int pte_t;
 
 /* 防止编译器报错 */
 #define UNUSED(x) (void)(x)
 #define UNUSED2(x, y) do { (void)(x); (void)(y); } while(0)
-#define UNUSED3(x, y, z) do { (void)(x); (void)(y); (void)(z); } while(0)
+#define UNUSED3(x,y, z) do { (void)(x); (void)(y); (void)(z); } while(0)
 
 #endif

@@ -10,7 +10,7 @@ user_start:
     mov ecx, msg
     mov edx, 16
     int 0x80
-    
+
     ; 系统调用：exit(0)
     mov eax, 1      ; sys_exit
     mov ebx, 0      ; 返回值

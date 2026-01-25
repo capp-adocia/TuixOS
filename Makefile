@@ -46,21 +46,21 @@ DISK_IMAGE = fs.img
 
 all: $(ISO_IMAGE) $(DISK_IMAGE)
 
-# 1. 编译汇编入口文件
+# 编译汇编入口文件
 $(BUILD_DIR)/%.o: %.asm
 	@mkdir -p $(dir $@)
 	$(NASM) -f elf32 -F dwarf $< -o $@
 
-# 2. 编译C文件
+# 编译C文件
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# 3. 链接内核
+# 链接内核
 $(KERNEL_ELF): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
-# 4. 创建可启动ISO
+# 创建可启动ISO
 # 注意grub这里会将整个目录打包进iso文件里
 $(ISO_IMAGE): $(KERNEL_ELF)
 	$(call log_info, 创建ISO文件...)
@@ -71,15 +71,17 @@ $(ISO_IMAGE): $(KERNEL_ELF)
 	rm -rf $(ISO_DIR)
 	$(call log_ok, ISO文件创建完成: $(ISO_IMAGE))
 
-# 5. 创建
+# 创建
 $(DISK_IMAGE):
 	$(call log_info, 创建硬盘镜像...)
-	dd if=/dev/zero of=$(DISK_IMAGE) bs=1M count=32
-	# TODO:调用mkfs工具进行格式化
-	# ./mkfs $(DISK_IMAGE)
+	dd if=/dev/zero of=$(DISK_IMAGE) bs=1K count=500
 	$(call log_ok, 磁盘镜像创建完成: $(DISK_IMAGE))
 
-# 6. 运行
+# 编译格式化工具
+mkfs: tools/mkfs.c
+	$(CC) $< -o $@
+
+# 运行
 run: $(ISO_IMAGE) $(DISK_IMAGE)
 	$(call log_info, 启动QEMU...)
 	qemu-system-i386 -m 256M \
@@ -87,15 +89,15 @@ run: $(ISO_IMAGE) $(DISK_IMAGE)
 		-drive file=$(DISK_IMAGE),format=raw \
 		-serial stdio 2>&1 | tee ./log
 
-# 7. 串口调试
-debug: $(ISO_IMAGE)
+# 串口调试
+debug: $(ISO_IMAGE) $(DISK_IMAGE)
 	$(call log_info, 启动串口调试...)
 	$(call log_info, gdb -x debug/debug-grub.gdb)
 	qemu-system-i386 -m 256M \
 		-cdrom $(ISO_IMAGE) \
 		-drive file=$(DISK_IMAGE),format=raw \
 		-serial stdio -s -S -display none
-# 8. 清理
+# 清理
 clean:
 	$(call log_info, 清理以下文件...)
 	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(DISK_IMAGE)
@@ -105,5 +107,6 @@ help:
 	$(call log_info, 构建目标:)
 	$(call log_info, all   - 构建完整系统)
 	$(call log_info, run   - 构建并运行)
+	$(call log_info, mkfs  - 格式化工具)
 	$(call log_info, debug - 构建并调试)
 	$(call log_info, clean - 清理所有生成文件)

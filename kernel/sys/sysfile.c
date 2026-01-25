@@ -1,6 +1,6 @@
 /* kernel/sys/sysfile.c */
 
-#include "stddef.h"
+#include <stddef.h>
 #include <Tuix/panic.h>
 #include <Tuix/sysfile.h>
 #include <Tuix/serial.h>

@@ -3,7 +3,7 @@
 #ifndef I_T_IDT_H
 #define I_T_IDT_H
 
-#include "Tuix/trap_frame.h"
+#include <Tuix/trap_frame.h>
 #include <stddef.h>
 #include <Tuix/isr.h>
 #include <Tuix/interrupts.h>

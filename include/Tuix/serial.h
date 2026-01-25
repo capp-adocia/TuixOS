@@ -3,7 +3,7 @@
 #ifndef I_T_SERIAL_H
 #define I_T_SERIAL_H
 
-#include <Tuix/io.h>
+#include <arch/x86.h>
 
 /**
  * 初始化串口

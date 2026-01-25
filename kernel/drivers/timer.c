@@ -1,7 +1,6 @@
 /* kernel/driver/timer.c */
 
 #include <Tuix/timer.h>
-#include <Tuix/io.h>
 #include <Tuix/serial.h>
 #include <Tuix/pic.h>
 #include <Tuix/process.h>
@@ -27,11 +26,11 @@ void init_timer(uint32_t frequency)
         divisor = 1;
         serial_printf("Warning: frequency too high, using maximum frequency\n");
     }
-    
+
     outb(0x43, 0x36);
     outb(0x40, divisor & 0xFF);
     outb(0x40, (divisor >> 8) & 0xFF);
-    
+
     serial_printf("Timer initialized with frequency: %d Hz\n", frequency);
 }
 

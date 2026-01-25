@@ -1,7 +1,7 @@
-/* include/Tuix/io.h */
+/* include/arch/x86.h */
 
-#ifndef I_T_IO_H
-#define I_T_IO_H
+#ifndef I_ARCH_X86_H
+#define I_ARCH_X86_H
 
 #include <stddef.h>
 
@@ -50,7 +50,25 @@ static inline uint32_t inl(uint16_t port)
 /* 延迟一小段时间 */
 static inline void io_wait(void)
 {
-    outb(0x80, 0);  // 向未使用的端口写入
+    outb(0x80, 0);
+}
+
+/* 关中断 */
+static inline void cli(void)
+{
+    __asm__ volatile("cli");
+}
+
+/* 开中断 */
+static inline void sti(void)
+{
+    __asm__ volatile("sti");
+}
+
+/* 停机 */
+static inline void hlt(void)
+{
+    __asm__ volatile("hlt");
 }
 
 #endif

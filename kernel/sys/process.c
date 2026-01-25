@@ -112,7 +112,7 @@ void launch_first_proc()
 
     while(true)
     {
-        __asm__ volatile("sti");
+        sti();
 
         // 遍历进程表，找到可运行的进程
         for(int i = 0;i < MAX_PROC;i++)

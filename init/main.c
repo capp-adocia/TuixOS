@@ -1,5 +1,6 @@
 /* init/main.c 实现C内核 */
 
+#include <arch/x86.h>
 #include <Tuix/gdt.h>
 #include <Tuix/idt.h>
 #include <Tuix/kalloc.h>
@@ -39,7 +40,7 @@ void print_LOGO(void)
     kprint(0, 0, "Done!");
 }
 
-void init_show(void) 
+void init_show(void)
 {
     clear_screen();
     print_LOGO();
@@ -52,7 +53,7 @@ void init_keyboard_system(void)
     // 2. 启用键盘IRQ
     enable_irq(IRQ_KEYBOARD); // 启用键盘
     // 3. 全局启用中断
-    __asm__ volatile("sti");
+    sti();
     kprint(5, 0, "Keyboard system ready...");
 }
 
@@ -87,5 +88,5 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     /* 执行调度以启动第一个用户进程 */
     launch_first_proc(); // 调度器执行一次调度
     /* 不会执行这里，因为已经开始调度了 */
-    while (1) { __asm__ volatile("hlt"); }
+    while (1) { hlt(); }
 }

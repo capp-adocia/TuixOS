@@ -1,6 +1,6 @@
 /* kernel/trap/isr.c */
 
-#include "Tuix/idt_list.h"
+#include <Tuix/idt_list.h>
 #include <Tuix/isr.h>
 
 #define ISR_NOERRNAME(num, name) \
