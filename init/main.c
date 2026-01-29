@@ -14,12 +14,15 @@
 #include <Tuix/timer.h>
 #include <def.h>
 #include <Tuix/panic.h>
+#include <Tuix/ide.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_addr);
 void init_show(void);
 void print_LOGO(void);
 
-const char *logo[] = {"TTTTTTTT  UU   UU  IIIIII  ##   ## ",
+static const char* os_name = "TuixOS";
+static const char *logo[] = {
+                      "TTTTTTTT  UU   UU  IIIIII  ##   ## ",
                       "   TT     UU   UU    II      # #   ",
                       "   TT     UU   UU    II       #    ",
                       "   TT     UU   UU    II      # #   ",
@@ -42,6 +45,8 @@ void print_LOGO(void)
 
 void init_show(void)
 {
+    serial_printf("<============= %s Launched =============>\n", os_name);
+
     clear_screen();
     print_LOGO();
     // clear_screen();
@@ -49,11 +54,9 @@ void init_show(void)
 
 void init_keyboard_system(void)
 {
-    // 1. 设置IDT中的键盘中断门
-    // 2. 启用键盘IRQ
+    // 设置IDT中的键盘中断门
+    // 启用键盘IRQ
     enable_irq(IRQ_KEYBOARD); // 启用键盘
-    // 3. 全局启用中断
-    sti();
     kprint(5, 0, "Keyboard system ready...");
 }
 
@@ -83,8 +86,12 @@ void kernel_main(uint32_t magic, uint32_t mbi_addr)
     init_timer(20);
     /* 启用键盘中断 */
     init_keyboard_system();
+    /* 初始化ide驱动 */
+    init_ide();
     /* 初始化第一个用户进程 */
     init_user();
+    /* 开中断接受信号 */
+    sti();
     /* 执行调度以启动第一个用户进程 */
     launch_first_proc(); // 调度器执行一次调度
     /* 不会执行这里，因为已经开始调度了 */

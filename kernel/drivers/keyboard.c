@@ -66,7 +66,6 @@ char scancode_to_char(uint8_t scancode)
         case 0x1C: return '\n'; // 回车
         case 0x0E: return '\b'; // 退格
         case 0x01: return 0x1B; // ESC (ASCII 27)
-        
         /* 未处理或释放键 */
         default: return 0;
     }
@@ -90,6 +89,6 @@ void keyboard_handler(struct trap_frame* frame)
         // uint8_t press_code = scancode - 0x80;
         // serial_printf("按键释放，扫描码:%x\n", press_code);
     }
-    
+ 
     send_eoi(frame->int_no);
 }

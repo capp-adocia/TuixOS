@@ -14,9 +14,9 @@ struct t_stat
 {
     short type;     // file type
     int dev;        // device
-    uint32_t ino;     // inode num
+    uint32_t ino;   // inode num
     short nlink;    // file link num
-    uint32_t size;    // file size
+    uint32_t size;  // file size
 };
 
 #endif

@@ -4,6 +4,8 @@
 #define I_T_FILE_H
 
 #include <stddef.h>
+#include <Tuix/sleeplock.h>
+#include <Tuix/fs.h>
 
 #define O_RONLY   0x000 // 以只读方式打开文件
 #define O_WONLY   0x001 // 以只写方式打开文件
@@ -19,21 +21,21 @@ struct file
     uint32_t offset;
 };
 
-/* 磁盘上inode的副本 */
+/* 磁盘上inode的副本 => 内存inode */
 struct inode
 {
     uint32_t dev;
     uint32_t num;
     int ref;
-    // lock锁?
-    int valid; // ？该inode是否有效
+    struct sleeplock lock;
+    int valid; // 该inode是否有效
 
     short type;
     short major;
     short minor;
     short nlink;
     uint32_t size;
-    // uint32_t addrs[]
+    uint32_t addrs[DIRECT_NUM + 1];
 };
 
 #endif

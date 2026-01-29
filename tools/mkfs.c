@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
 #include <assert.h>
@@ -27,18 +26,18 @@ uint32_t freeinode = 1;
 uint32_t freeblock;
 
 // 转为小端序
-ushort xshort(ushort x)
+uint32_t xshort(uint16_t x)
 {
-    ushort y;
+    uint32_t y;
     uint8_t *a = (uint8_t*)&y;
     a[0] = x;
     a[1] = x >> 8;
     return y;
 }
 
-uint xint(uint32_t x)
+uint32_t xint(uint32_t x)
 {
-    uint y;
+    uint32_t y;
     uint8_t *a = (uint8_t*)&y;
     a[0] = x;
     a[1] = x >> 8;
@@ -48,7 +47,7 @@ uint xint(uint32_t x)
 }
 
 // 写数据进对应的块位置
-void wsect(uint sec, void *buf)
+void wsect(uint32_t sec, void *buf)
 {
     if(lseek(fsfd, sec * B_SIZE, SEEK_SET) != sec * B_SIZE)
     {
@@ -62,7 +61,7 @@ void wsect(uint sec, void *buf)
     }
 }
 // 从某一个块中读取数据到buf中
-void rsect(uint sec, void *buf)
+void rsect(uint32_t sec, void *buf)
 {
     if(lseek(fsfd, sec * B_SIZE, SEEK_SET) != sec * B_SIZE)
     {
@@ -76,10 +75,10 @@ void rsect(uint sec, void *buf)
     }
 }
 // 读某inode
-void rinode(uint inum, struct dinode *ip)
+void rinode(uint32_t inum, struct dinode *ip)
 {
     char buf[B_SIZE];
-    uint bn;
+    uint32_t bn;
     struct dinode *dip;
 
     bn = IBLOCK(inum, sb);
@@ -89,10 +88,10 @@ void rinode(uint inum, struct dinode *ip)
 }
 
 // 写入inode
-void winode(uint inum, struct dinode *ip)
+void winode(uint32_t inum, struct dinode *ip)
 {
     char buf[B_SIZE];
-    uint bn;
+    uint32_t bn;
     struct dinode *dip;
 
     bn = IBLOCK(inum, sb);
@@ -103,9 +102,9 @@ void winode(uint inum, struct dinode *ip)
     wsect(bn, buf);
 }
 // 分配inode,这个类型是目录或文件或设备类型
-uint ialloc(ushort type)
+uint32_t ialloc(uint16_t type)
 {
-    uint inum = freeinode++;
+    uint32_t inum = freeinode++;
     struct dinode din;
 
     memset(&din, 0, sizeof(din));
@@ -131,14 +130,15 @@ void balloc(int used)
     wsect(sb.bmapstart, buf);
 }
 
-void iappend(uint inum, void *xp, int n)
+// 既可以接受目录文件也可以接受文件数据
+void iappend(uint32_t inum, void *xp, int n)
 {
     char *p = (char*)xp;
-    uint fbn, off, n1;
+    uint32_t fbn, off, n1;
     struct dinode din;
     char buf[B_SIZE];
-    uint indirect[INDIRECT_NUM]; // 这个就是指的是一级索引表
-    uint x;
+    uint32_t indirect[INDIRECT_NUM]; // 这个就是指的是一级索引表
+    uint32_t x;
 
     rinode(inum, &din);
     off = xint(din.size);
@@ -184,7 +184,7 @@ void iappend(uint inum, void *xp, int n)
 int main(int argc, char** argv)
 {
     int i, cc, fd;
-    uint root_ino, inum, off;
+    uint32_t root_ino, inum, off;
     struct dirent de;
     char buf[B_SIZE];
     struct dinode din;
@@ -264,10 +264,10 @@ int main(int argc, char** argv)
         memset(&de, 0, sizeof(de));
         de.inum = xshort(inum);
         strncpy(de.name, filename, DIR_SIZE);
-        iappend(root_ino, &de, sizeof(de));
+        iappend(root_ino, &de, sizeof(de)); // 目录
 
         while((cc = read(fd, buf, sizeof(buf))) > 0)
-            iappend(inum, buf, cc);
+            iappend(inum, buf, cc); // 数据
 
         close(fd);
     }

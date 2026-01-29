@@ -6,12 +6,13 @@
 #include <Tuix/timer.h>
 #include <Tuix/serial.h>
 #include <Tuix/syscall.h>
+#include <Tuix/pic.h>
 
 void isr_default_handler(struct trap_frame* frame)
 {
     if(frame->int_no < 32){
         kprint(15, 0, "Ex:\n");
-        
+
         char num_str[3];
         num_str[0] = '0' + (frame->int_no / 10);
         num_str[1] = '0' + (frame->int_no % 10); 
@@ -372,7 +373,8 @@ void isr_fpu_handler(struct trap_frame* frame)
 // 46: 主ATA硬盘
 void isr_ata1_handler(struct trap_frame* frame)
 {
-    UNUSED(frame);
+    serial_printf("主磁盘中断触发!");
+    send_eoi(frame->int_no);
 }
 
 // 47: 从ATA硬盘

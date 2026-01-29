@@ -25,7 +25,7 @@ void syscall_handlers(struct trap_frame* frame)
                 // 退出后释放进程的空间，执行一次调度，切换到下一个进程
                 cpus[cpu_id].proc->state = ZOMBIE;
                 sched();
-                ret = 0;  // exit 通常返回 0
+                ret = 0;
                 break;
             }
         case SYS_WRITE:

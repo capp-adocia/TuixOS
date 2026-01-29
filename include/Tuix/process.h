@@ -8,6 +8,7 @@
 #include <Tuix/sysconf.h>
 #include <Tuix/gdt.h>
 #include <Tuix/file.h>
+#include <Tuix/spinlock.h>
 
 enum proc_state { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
@@ -39,8 +40,10 @@ struct proc
     uint32_t kstack_size;
     // 系统打开文件表
     struct file* ofile[OFILE_NUM];
+    // 睡眠锁指针,如果非零，则在chan上睡眠
+    void* chan;
     // 就绪队列
-    struct list_head ready_node; // TODO:暂时未使用
+    struct list_head ready_node; // NOTE:暂时未使用
 };
 
 // cpu状态，当前默认用单核
@@ -51,6 +54,9 @@ struct cpu
     volatile uint32_t started;          // CPU 是否已启动？
     struct proc *proc;                  // 当前运行在此 CPU 上的进程或为空
     struct tss_entry ts;                // 任务状态信息
+    int ncli;                           // pushcli 嵌套的深度。
+    int intena;                         // 在 pushcli 前中断是否已启用？
+    int pid;                            // 进程号
 };
 
 extern struct cpu cpus[MAX_CPUS];
@@ -139,8 +145,29 @@ void schedule(void);
 
 /**
  * 执行进行调度，选择一个新的进程
- *
  */
 void sched(void);
+
+/**
+ * 获取当前运行的cpu上下文
+ * @param 返回cpu实例
+ */
+static inline struct cpu* c_cpu(void)
+{
+    return &cpus[cpu_id];
+}
+
+/**
+ * 睡眠,当前进程放弃cpu,切换到其他就绪进程
+ * @param chan
+ * @param lk 自旋锁
+ */
+void sleep(void* chan, struct spinlock* lk);
+
+/**
+ * 叫醒处在睡眠的进程
+ * @param chan 睡眠锁
+ */
+void wakeup(void* chan);
 
 #endif

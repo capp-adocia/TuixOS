@@ -71,4 +71,38 @@ static inline void hlt(void)
     __asm__ volatile("hlt");
 }
 
+/* 读eflag标志 */
+static inline uint32_t reade_flags(void)
+{
+    uint32_t eflags;
+    __asm__ volatile("pushfl; popl %0" : "=r" (eflags));
+    return eflags;
+}
+
+/* Test and Set 实现互斥 */
+static inline uint32_t xchg(volatile uint32_t *addr, uint32_t newval)
+{
+    uint32_t result;
+    __asm__ volatile("lock; xchgl %0, %1" :
+            "+m" (*addr), "=a" (result) :
+            "1" (newval) : "cc");
+    return result;
+}
+
+/* 批量写4B * cnt数据 */
+static inline void outsl(int port, const void *addr, int cnt)
+{
+    __asm__ volatile("cld; rep outsl" :
+                "=S" (addr), "=c" (cnt) :
+                "d" (port), "0" (addr), "1" (cnt) : "cc");
+}
+
+/* 批量读4B * cnt数据 */
+static inline void insl(int port, void *addr, int cnt)
+{
+  asm volatile("cld; rep insl" :
+               "=D" (addr), "=c" (cnt) :
+               "d" (port), "0" (addr), "1" (cnt) : "memory", "cc");
+}
+
 #endif

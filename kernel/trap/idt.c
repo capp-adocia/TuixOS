@@ -52,7 +52,6 @@ static void register_interrupt_handlers(void)
 // #define X(num) register_interrupt_handler(num, isr_##num##_handler);
     // IDT_LIST_OTHER
 // #undef X
-    /* 注册系统调用 */
 }
 
 static void idt_set(void)

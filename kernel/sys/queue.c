@@ -28,7 +28,7 @@ struct list_head* dequeue(struct queue* q)
         serial_printf("dequeue操作失败,指针不能为NULL\n");
         return NULL;
     }
-    
+
     struct list_head* head = q->head;
     q->head = q->head->next;
     head->next = NULL; // 隔离出队的元素

@@ -15,7 +15,6 @@ void init_serial(void)
     outb(0x3F8 + 1, 0x00);    // 设置波特率高位
     outb(0x3F8 + 3, 0x03);    // 8位数据，无校验，1停止位
     outb(0x3F8 + 4, 0x0B);    // 启用IRQ，设置RTS/DSR
-    serial_printf("=== Tuix OS 启动 ===\n");
 }
 
 void serial_putchar(const char c)

@@ -1,5 +1,6 @@
 /* kernel/sys/process.c */
 
+#include "Tuix/mulitiboot2.h"
 #include <Tuix/gdt.h>
 #include <Tuix/mmu.h>
 #include <Tuix/vm.h>
@@ -21,6 +22,7 @@ extern void trap_ret(void);
 /* 进程表 */
 struct
 {
+    struct spinlock lock;
     struct proc proc[MAX_PROC];
 } ptable;
 
@@ -28,8 +30,11 @@ struct
 static void fork_ret(void)
 {
     static int first = 1;
+    release(&ptable.lock);
+
     if (first)
     {
+        first = 0;
         serial_printf("fork_ret\n");
     }
     // 新进程都会执行这个函数，返回后弹出栈顶指针eip = trap_ret
@@ -41,6 +46,7 @@ extern const uint32_t user_init_code_size;
 
 void init_user(void)
 {
+    init_lock(&ptable.lock, "ptable");
     struct proc* p;
     p = alloc_process();
 
@@ -95,7 +101,7 @@ struct proc* config_proc_kstack(struct proc* proc)
     // trap_ret其实就是trap函数的下半部分
     sp -= sizeof(uint32_t);
     *(uint32_t*)sp = (uint32_t)trap_ret; // 新进程执行的第二个函数
-    
+
     // 再放入内核栈上下文信息
     sp -= sizeof(*(proc->ctx));
     proc->ctx = (struct context*)sp;
@@ -114,11 +120,12 @@ void launch_first_proc()
     {
         sti();
 
+        acquire(&ptable.lock);
         // 遍历进程表，找到可运行的进程
         for(int i = 0;i < MAX_PROC;i++)
         {
             if(ptable.proc[i].state != RUNNABLE)
-            {continue;}
+                continue;
 
             p = &(ptable.proc[i]);
             // 找到后，设置进程的状态
@@ -128,28 +135,89 @@ void launch_first_proc()
             p->state = RUNNING;
             // 进行上下文切换，执行这个函数后，后面都不会再返回了，除非已经直接完成
             struct context* new_ctx = p->ctx;
-            // 这里把内核的esp保存到c->scheduler里了
+            // 这里把内核的esp保存到c->s= &cpus[cpu_id];
             struct context** old_ctx = &c->scheduler;
             switch_to(old_ctx, new_ctx);
+            // 注意这里每次调度时都会回到这里,让调度器再寻找下一个进程
             serial_printf("回内核了，程序退出成功！\n");
             // 切换回内核页表，因为已经到内核态了
             switch_kvm();
             c->proc = 0; // 执行到这里用户进程已经完成了
         }
+        release(&ptable.lock);
     }
 }
 
 // 当进程使用了yield表示这个线程主动释放了cpu使用权，那么此时应该把它加入就绪队列，并从就绪队列中取出一个新任务
 void yield(void)
 {
+    acquire(&ptable.lock);
+    c_cpu()->proc->state = RUNNABLE;
     sched();
+    release(&ptable.lock);
 }
 
 void sched(void)
 {
+    int intena;
+    struct proc *p = c_cpu()->proc;
+
+    if(!holding(&ptable.lock))
+        PANIC("sched ptable.lock");
+    if(c_cpu()->ncli != 1)
+        PANIC("sched locks");
+    if(p->state == RUNNING)
+        PANIC("sched running");
+    if(reade_flags() & FL_IF)
+        PANIC("sched interruptible");
+
+    intena = c_cpu()->intena; // 切换前先保存中断状态
     // 取出当前cpu的esp作为下一个进程的esp，切换回内核代码
-    struct cpu* c = &cpus[cpu_id];
-    switch_to(&(c->proc->ctx), c->scheduler);
+    switch_to(&(c_cpu()->proc->ctx), c_cpu()->scheduler);
+    c_cpu()->intena = intena;
+}
+
+void sleep(void* chan, struct spinlock* lk)
+{
+    struct proc *p = c_cpu()->proc;
+
+    if(p == 0)
+        PANIC("sleep");
+
+    if(lk == 0)
+        PANIC("sleep without lock");
+
+    if(lk != &ptable.lock)
+    {
+        acquire(&ptable.lock); // 注意这里必须要用全局锁来保护操作
+        release(lk);
+    }
+
+    p->chan = chan;
+    p->state = SLEEPING;
+
+    sched();
+    // 如果被唤醒了,说明不用再睡了,就重新获得锁
+    p->chan = 0;
+
+    // 重新获得锁
+    if(lk != &ptable.lock)
+    {
+        release(&ptable.lock);
+        acquire(lk);
+    }
+}
+
+void wakeup(void* chan)
+{
+    acquire(&ptable.lock);
+    struct proc *p;
+
+    for(p = ptable.proc; p < &ptable.proc[MAX_PROC]; p++)
+        if(p->state == SLEEPING && p->chan == chan)
+            p->state = RUNNABLE;
+
+    release(&ptable.lock);
 }
 
 // void schedule(void)
